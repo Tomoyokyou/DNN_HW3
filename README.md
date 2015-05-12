@@ -1,1 +1,1 @@
-# DNN_HW3
+RNN project
