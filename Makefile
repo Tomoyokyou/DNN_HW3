@@ -1,6 +1,6 @@
 CC=gcc
 CXX=g++
-CPPFLAGS= -O3 -g -std=c++11
+CPPFLAGS= -O3 -std=c++11
 NVCC=nvcc -arch=sm_21 -w
 CUDA_DIR=/usr/local/cuda/
 EIGENDIR=/usr/local/include/eigen3/
@@ -17,7 +17,7 @@ LIBS=$(LIBCUMATDIR)lib/libcumatrix.a
 
 .PHONY: debug all clean 
 
-all:DIR $(EXECUTABLES)
+all:DIR TOOL $(EXECUTABLES)
 
 debug: CPPFLAGS+=-g -DDEBUG 
 
@@ -36,7 +36,12 @@ LIBRARY=-lcuda -lcublas -lcudart -lcumatrix
 
 TOOL:
 	@echo "Checking library file in tool/libcumatrix"
-	@cd tool/libcumatrix/ ; make clean;  make ; cd ../..
+	@if test -f $(LIBS); then \
+		echo "Library file found"; \
+	else \
+		echo "Missing library file...regenerating"; \
+		cd tool/libcumatrix/ ;  make ; cd ../.. ; \
+	fi
 DIR:
 	@echo "checking object and executable directory..."
 	@mkdir -p obj
