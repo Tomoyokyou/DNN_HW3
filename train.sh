@@ -1,5 +1,4 @@
-DATA=/home/hui/project/model/
-DATA_LARRY=/home/larry/Documents/data/MLDS_HW1_RELEASE_v1/mfcc/
+DATA=/home/hui/model/
 TYPE=fbank/
 TRAIN=${DATA}train/train_norm.svm
 TEST=${DATA}test/test_norm.svm
@@ -20,7 +19,8 @@ mkdir -p model
 # *****************************************
 
 #valgrind --leak-check=yes 
-gdb --args ./bin/train.app ${TRAIN} ${TEST} --rate ${RATE} --batchsize ${BSIZE} --maxEpoch ${MAXEPOCH} \
+#gdb --args 
+./bin/train.app ${TRAIN} ${TEST} --rate ${RATE} --batchsize ${BSIZE} --maxEpoch ${MAXEPOCH} \
 --momentum 0.9 --outName ${OUTMODEL} --decay ${DECAY} --variance 1.0 --dim ${DIM}
 
 # ******************************************
