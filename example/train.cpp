@@ -10,7 +10,7 @@
 
 using namespace std;
 
-void myUsage(){cerr<<"$cmd [inputfile] [testfile] --outName [] \n options: \n\t--phonenum [] --rate [] --segment [] --batchsize [] --maxEpoch [] --momentum [] --decay [] \n\t--load [] --dim [indim-hidnum1-hidnum2-outdim] --range/variance []"<<endl;}
+void myUsage(){cerr<<"$cmd [inputfile] [testfile] --outName [] \n options: \n\t--phonenum [] --rate [] --segment [] --batchsize [] --maxEpoch [] --momentum [] --reg [] --decay [] \n\t--load [] --dim [indim-hidnum1-hidnum2-outdim] --range/variance []"<<endl;}
 
 int main(int argc,char** argv){
 	srand((unsigned)time(NULL));
@@ -22,6 +22,7 @@ int main(int argc,char** argv){
 	p.addOption("--batchsize",true);
 	p.addOption("--maxEpoch",true);
 	p.addOption("--momentum",true);
+	p.addOption("--reg",true);
 	p.addOption("--outName",false);
 	p.addOption("--load",false);
 	p.addOption("--decay",true);
@@ -30,7 +31,7 @@ int main(int argc,char** argv){
 	p.addOption("--dim",false);
 	string trainF,testF,labelF,outF,loadF,dims;
 	size_t b_size,m_e;
-	float rate,segment,momentum,decay,var;
+	float rate,segment,momentum,decay,var,reg;
 	Init _inittype;
 	if(!p.read(argc,argv)){
 		myUsage();
@@ -43,6 +44,7 @@ int main(int argc,char** argv){
 	if(!p.getNum("--batchsize",b_size)){b_size=128;}
 	if(!p.getNum("--maxEpoch",m_e)){m_e=10000;}
 	if(!p.getNum("--momentum",momentum)){momentum=0;}
+	if(!p.getNum("--reg",reg)){reg=1.0e-06;}
 	if(!p.getString("--outName",outF)){outF="out.mdl";}
 	if(!p.getNum("--decay",decay)){decay=1;}
 	if(p.getNum("--variance",var)&&p.getNum("--range",var)){cerr<<"--variance for normal init, --range for uniform init, not both!"<<endl;return 1;}
@@ -57,6 +59,7 @@ int main(int argc,char** argv){
 		if(nnload.load(loadF)){
 		nnload.setLearningRate(rate);
 		nnload.setMomentum(momentum);
+		nnload.setReg(reg);
 		nnload.train(allData,b_size,m_e,0.8,decay);
 		nnload.save(outF);
 		}
@@ -65,7 +68,7 @@ int main(int argc,char** argv){
 	else{
 	vector<size_t>dim;
 	parseDim(dims,dim);
-	DNN dnn(rate,momentum,var,_inittype,dim,BATCH);
+	DNN dnn(rate,momentum,reg,var,_inittype,dim,BATCH);
 	dnn.train(allData,b_size,m_e,0.8,decay);
 	dnn.save(outF);
 	}

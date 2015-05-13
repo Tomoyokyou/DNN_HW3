@@ -20,8 +20,9 @@ mkdir -p model
 # *****************************************
 
 #valgrind --leak-check=yes 
-gdb --args ./bin/train.app ${TRAIN} ${TEST} --rate ${RATE} --batchsize ${BSIZE} --maxEpoch ${MAXEPOCH} \
---momentum 0.9 --outName ${OUTMODEL} --decay ${DECAY} --variance 1.0 --dim ${DIM}
+#gdb --args 
+./bin/train.app ${TRAIN} ${TEST} --rate ${RATE} --batchsize ${BSIZE} --maxEpoch ${MAXEPOCH} \
+--momentum 0.9 --reg 0.00001 --outName ${OUTMODEL} --decay ${DECAY} --variance 0.1 --dim ${DIM}
 
 # ******************************************
 # * THIS PART IS USED FOR LOADING DNN MODEL*
