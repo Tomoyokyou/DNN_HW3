@@ -14,7 +14,11 @@ using namespace Eigen;
 
 typedef host_matrix<float> mat;
 
+<<<<<<< HEAD
+myNnGen gn(0,1);
+=======
 myNnGen gn(0,0.1);
+>>>>>>> 83de668d99776f89136a94a92e92e2eac338fecf
 
 void rand_init(mat& w,float range){
 	MatrixXf* h_data=w.getData();

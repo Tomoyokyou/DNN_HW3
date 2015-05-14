@@ -21,7 +21,11 @@ float computeErrRate(const vector<size_t>& ans, const vector<size_t>& output);
 void computeLabel(vector<size_t>& result,const mat& outputMat);
 
 DNN::DNN():_learningRate(0.001),_momentum(0), _method(ALL){}
+<<<<<<< HEAD
+DNN::DNN(float learningRate, float momentum, float variance,Init init, const vector<size_t>& v, Method method):_learningRate(learningRate), _momentum(momentum), _method(method){
+=======
 DNN::DNN(float learningRate, float momentum,float reg, float variance,Init init, const vector<size_t>& v, Method method):_learningRate(learningRate), _momentum(momentum),_reg(reg), _method(method){
+>>>>>>> 83de668d99776f89136a94a92e92e2eac338fecf
 	int numOfLayers = v.size();
 	switch(init){
 	case NORMAL:
@@ -89,11 +93,19 @@ void DNN::train(Dataset& labeledData, size_t batchSize, size_t maxEpoch = MAX_EP
 
 		trainData.getBatch(batchSize, batchData, batchLabel, true);
 		mat batchOutput;
+<<<<<<< HEAD
+		
+		feedForward(batchOutput, batchData, true);
+
+		mat lastDelta(batchOutput - batchLabel);
+		backPropagate(lastDelta, _learningRate, _momentum); //momentum
+=======
 	
 		feedForward(batchOutput, batchData, true);
 
 		mat lastDelta(batchOutput - batchLabel);
 		backPropagate(lastDelta, _learningRate, _momentum,_reg); //momentum
+>>>>>>> 83de668d99776f89136a94a92e92e2eac338fecf
 		
 		if( num % 2000 == 0 ){
 			if(_learningRate==1.0e-4){}
@@ -143,7 +155,11 @@ void DNN::setLearningRate(float learningRate){
 void DNN::setMomentum(float momentum){
 	_momentum = momentum;
 }
+<<<<<<< HEAD
+
+=======
 void DNN::setReg(float reg){_reg=reg;}
+>>>>>>> 83de668d99776f89136a94a92e92e2eac338fecf
 size_t DNN::getInputDimension(){
 	return _transforms.front()->getInputDim();
 }
@@ -196,13 +212,28 @@ bool DNN::load(const string& fn){
 						ss1 >> h_data[ j*rowNum + i ];
 					}
 				}
+<<<<<<< HEAD
+				ifs.getline(buf, sizeof(buf));
+=======
 				/*ifs.getline(buf, sizeof(buf));
+>>>>>>> 83de668d99776f89136a94a92e92e2eac338fecf
 				ifs.getline(buf, sizeof(buf));
 				tempStr.assign(buf);
 				stringstream ss2(tempStr);
 				float temp;
 				for(size_t i = 0; i < rowNum; i++){
 					ss2 >> h_data_bias[i];
+<<<<<<< HEAD
+				}
+				mat weightMat(h_data,rowNum, colNum);
+				mat biasMat(h_data_bias,rowNum, 1);		
+				
+				Transforms* pTransform;
+				if(type == "sigmoid")
+					pTransform = new Sigmoid(weightMat, biasMat);
+				else if(type == "softmax")
+					pTransform = new Softmax(weightMat, biasMat);
+=======
 				}*/
 				mat weightMat(h_data,rowNum, colNum);
 				//mat biasMat(h_data_bias,rowNum, 1);		
@@ -214,6 +245,7 @@ bool DNN::load(const string& fn){
 				else if(type == "softmax")
 						pTransform = new Softmax(weightMat);
 					//pTransform = new Softmax(weightMat, biasMat);
+>>>>>>> 83de668d99776f89136a94a92e92e2eac338fecf
 				else{
 					cerr << "Undefined activation function! \" " << type << " \"\n";
 					exit(1);
@@ -241,11 +273,19 @@ void DNN::getHiddenForward(mat& outputMat, const mat& inputMat){
 }
 
 //The delta of last layer = _sigoutdiff & grad(errorFunc())
+<<<<<<< HEAD
+void DNN::backPropagate(const mat& deltaMat, float learningRate, float momentum){
+	mat tempMat = deltaMat;
+	mat errorMat;
+	for(int i = _transforms.size()-1; i >= 0; i--){
+		(_transforms.at(i))->backPropagate(errorMat, tempMat, learningRate, momentum);
+=======
 void DNN::backPropagate(const mat& deltaMat, float learningRate, float momentum,float regularization){
 	mat tempMat = deltaMat;
 	mat errorMat;
 	for(int i = _transforms.size()-1; i >= 0; i--){
 		(_transforms.at(i))->backPropagate(errorMat, tempMat, learningRate, momentum,regularization);
+>>>>>>> 83de668d99776f89136a94a92e92e2eac338fecf
 		tempMat = errorMat;
 	}
 }

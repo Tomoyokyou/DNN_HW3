@@ -24,7 +24,11 @@ enum Init{
 class DNN{
 public:
 	DNN();
+<<<<<<< HEAD
+	DNN(float learningRate,float momentum,float variance,Init init, const vector<size_t>& v, Method method);
+=======
 	DNN(float learningRate,float momentum,float reg,float variance,Init init, const vector<size_t>& v, Method method);
+>>>>>>> 83de668d99776f89136a94a92e92e2eac338fecf
 	~DNN();
 
 	void train(Dataset& labeledData, size_t batchSize, size_t maxEpoch, float trainRation, float alpha);
@@ -34,7 +38,10 @@ public:
 	//void setDataset(Dataset* pData);
 	void setLearningRate(float learningRate);
 	void setMomentum(float momentum);
+<<<<<<< HEAD
+=======
 	void setReg(float reg);
+>>>>>>> 83de668d99776f89136a94a92e92e2eac338fecf
 	size_t getInputDimension();
 	size_t getOutputDimension();
 	size_t getNumLayers();
@@ -43,12 +50,19 @@ public:
 
 private:
 	void feedForward(mat& ouputMat, const mat& inputMat, bool train);
+<<<<<<< HEAD
+	void backPropagate(const mat& foutMat, float learningRate, float momentum);
+=======
 	void backPropagate(const mat& foutMat, float learningRate, float momentum,float regularization);
+>>>>>>> 83de668d99776f89136a94a92e92e2eac338fecf
 
 	//Dataset* _pData;
 	float _learningRate;
 	float _momentum;
+<<<<<<< HEAD
+=======
 	float _reg;
+>>>>>>> 83de668d99776f89136a94a92e92e2eac338fecf
 	Method _method;
 	vector<Transforms*> _transforms;
 	

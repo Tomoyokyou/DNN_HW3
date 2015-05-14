@@ -56,6 +56,9 @@ predict:$(HEADEROBJ) example/predict.cpp
 	@echo "compiling predict.app for DNN Testing"
 	@$(CXX) $(CPPFLAGS) $(INCLUDE) -o bin/$@.app $^ $(LIBS) $(LIBRARY) $(LD_LIBRARY)
 
+jason:obj/dataset.o example/dataTest.cpp
+	@echo "compiling dataTest.app for Dataset Testing"
+	@$(CXX) $(CPPFLAGS) $(INCLUDE) -o bin/$@.app $^ $(LIBS) $(LIBRARY) $(LD_LIBRARY)
 clean:
 	@echo "All objects and executables removed"
 	@rm -f $(EXECUTABLES) obj/* bin/*.app
