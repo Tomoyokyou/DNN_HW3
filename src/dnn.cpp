@@ -19,6 +19,8 @@ typedef host_matrix<float> mat;
 
 float computeErrRate(const vector<size_t>& ans, const vector<size_t>& output);
 void computeLabel(vector<size_t>& result,const mat& outputMat);
+void calError(mat& errout,const mat& fin,Transforms* act,const mat& delta);
+
 
 DNN::DNN():_learningRate(0.001),_momentum(0), _method(ALL){}
 DNN::DNN(float learningRate, float momentum,float reg, float variance,Init init, const vector<size_t>& v, Method method):_learningRate(learningRate), _momentum(momentum),_reg(reg), _method(method){
@@ -83,17 +85,20 @@ void DNN::train(Dataset& labeledData, size_t batchSize, size_t maxEpoch = MAX_EP
 	size_t oneEpoch = trainData.getDataNum()/batchSize;
 	size_t epochCnt = 0;
 	size_t num = 0;
+	vector<mat> fout;
+	vector<size_t> validResult;
 	for(; epochCnt < maxEpoch; num++){
 		mat batchData;
 		mat batchLabel;
 
 		trainData.getBatch(batchSize, batchData, batchLabel, true);
-		mat batchOutput;
-	
-		feedForward(batchOutput, batchData, true);
+		//mat batchOutput;
+		fout.clear();	
+		feedForward(batchData,fout);
+		//mat batchOutput=fout.back();
 
-		mat lastDelta(batchOutput - batchLabel);
-		backPropagate(lastDelta, _learningRate, _momentum,_reg); //momentum
+		//mat lastDelta(batchOutput - batchLabel);
+		backPropagate(_learningRate, _momentum,_reg,fout,batchLabel); //momentum
 		
 		if( num % 2000 == 0 ){
 			if(_learningRate==1.0e-4){}
@@ -103,7 +108,7 @@ void DNN::train(Dataset& labeledData, size_t batchSize, size_t maxEpoch = MAX_EP
 
 		if( num % oneEpoch == 1 ){
 			epochCnt++;
-			vector<size_t> validResult;
+			validResult.clear();
 			predict(validResult, validSet);
 
 			Eout = computeErrRate(validLabel, validResult);
@@ -132,9 +137,10 @@ void DNN::train(Dataset& labeledData, size_t batchSize, size_t maxEpoch = MAX_EP
 }
 
 void DNN::predict(vector<size_t>& result, const mat& inputMat){
-	mat outputMat(1, 1);
-	feedForward(outputMat, inputMat, false);
-	computeLabel(result, outputMat);
+	//mat outputMat(1, 1);
+	vector<mat> fout;
+	feedForward(inputMat,fout); // modified
+	computeLabel(result, fout.back());
 }
 
 void DNN::setLearningRate(float learningRate){
@@ -196,24 +202,13 @@ bool DNN::load(const string& fn){
 						ss1 >> h_data[ j*rowNum + i ];
 					}
 				}
-				/*ifs.getline(buf, sizeof(buf));
-				ifs.getline(buf, sizeof(buf));
-				tempStr.assign(buf);
-				stringstream ss2(tempStr);
-				float temp;
-				for(size_t i = 0; i < rowNum; i++){
-					ss2 >> h_data_bias[i];
-				}*/
 				mat weightMat(h_data,rowNum, colNum);
-				//mat biasMat(h_data_bias,rowNum, 1);		
 				
 				Transforms* pTransform;
 				if(type == "sigmoid")
 						pTransform = new Sigmoid(weightMat);
-					//pTransform = new Sigmoid(weightMat, biasMat);
 				else if(type == "softmax")
 						pTransform = new Softmax(weightMat);
-					//pTransform = new Softmax(weightMat, biasMat);
 				else{
 					cerr << "Undefined activation function! \" " << type << " \"\n";
 					exit(1);
@@ -228,26 +223,41 @@ bool DNN::load(const string& fn){
 	return true;
 }
 
-void DNN::feedForward(mat& outputMat, const mat& inputMat, bool train){
-	mat tempInputMat = inputMat;
-	for(size_t i = 0; i < _transforms.size(); i++){
-		(_transforms.at(i))->forward(outputMat, tempInputMat, train);
-		tempInputMat = outputMat;
+void DNN::feedForward(const mat& inputMat,vector<mat>& fout){
+	//mat tempInputMat = inputMat;
+	fout.resize(_transforms.size()+1);//
+	fout[0]=inputMat;
+	_transforms.at(0)->forward(fout[1],fout[0]);
+	for(size_t i = 1; i < _transforms.size(); i++){
+		(_transforms.at(i))->forward(fout[i+1],fout[i] );
+		//tempInputMat = outputMat;
 	}
 }
 
 void DNN::getHiddenForward(mat& outputMat, const mat& inputMat){
-	_transforms.at(0)->forward(outputMat, inputMat, false);
+	vector<mat> fout;
+	fout.resize(1);
+	_transforms.at(0)->forward(fout[0],inputMat);
+	outputMat=fout.front();
 }
 
 //The delta of last layer = _sigoutdiff & grad(errorFunc())
-void DNN::backPropagate(const mat& deltaMat, float learningRate, float momentum,float regularization){
-	mat tempMat = deltaMat;
+void DNN::backPropagate(float learningRate, float momentum,float regularization,const vector<mat>& fin,const mat& answer){
+	vector<mat> err;
+	err.resize(_transforms.size());
+	err.back() = fin.back()-answer;  //cross entropy gradient
+	size_t size=_transforms.size();
+	_transforms.back()->backPropagate(fin.at(size),err[size-1],learningRate,momentum,regularization); //for softmax
+	for(int i=0;i<_transforms.size()-1;i++){
+		calError(err[size-2-i],fin.at(size-i),_transforms[size-2-i],err.at(size-1-i));
+		_transforms[size-2-i]->backPropagate(fin.at(size-1-i),err.at(size-2-i),learningRate,momentum,regularization); //for softmax
+	}
+/*
 	mat errorMat;
 	for(int i = _transforms.size()-1; i >= 0; i--){
 		(_transforms.at(i))->backPropagate(errorMat, tempMat, learningRate, momentum,regularization);
 		tempMat = errorMat;
-	}
+	}*/
 }
 
 
@@ -261,26 +271,6 @@ void computeLabel(vector<size_t>& result,const mat& outputMat){
 	for(size_t t=0;t<num;++t)
 		result.push_back(maxidx[t]);
 
-	/*
-	float *data=outputMat.getData();
-	for(size_t t=0;t<num;++t){
-		max_idx=t*outputMat.getRows();
-	for(size_t k=1;k<dim;++k){
-		if(data[max_idx]<data[t*dim+k])
-			max_idx=t*dim+k;
-	}
-	result.push_back(max_idx);
-	}
-	*/
-	/*
-	thrust::device_ptr<float> d_ptr = thrust::device_pointer_cast(outputMat.getData());
-	thrust::host_vector<float> h_vec(d_ptr, d_ptr + inputDim*featureNum);
-	for(size_t j = 0; j < outputMat.getCols(); j++){
-		thrust::host_vector<float>::iterator iter = thrust::max_element(h_vec.begin() + j*inputDim, h_vec.begin() + (j+1)*inputDim);
-		unsigned int position = iter - h_vec.begin() - j*inputDim;
-		result.push_back(position);
-	}
-	*/
 }
 
 float computeErrRate(const vector<size_t>& ans, const vector<size_t>& output){
@@ -294,3 +284,17 @@ float computeErrRate(const vector<size_t>& ans, const vector<size_t>& output){
 	return 1.0-(float)accCount/(float)ans.size();
 }
 
+void calError(mat& errout,const mat& fin,Transforms* act,const mat& delta){
+	//modified
+	ACT type=act->getAct();
+	mat sigdiff(fin & ((float)1.0-fin));
+	mat w(act->getWeight());
+	switch(type){
+		case SIGMOID:
+			errout=sigdiff & ( ~w * delta);
+			break;
+		case SOFTMAX:
+		default:
+			break;
+	}
+}

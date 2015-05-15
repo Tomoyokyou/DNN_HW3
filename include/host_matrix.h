@@ -18,30 +18,34 @@ public:
 	class Transpose {
 	public:
 		host_matrix<T> operator + (const host_matrix<T>& rhs) {
-			host_matrix<T> result(_m._rows,_m.cols);
-			host_geam(_m,rhs,result,(T)1.0,(T)1.0,true,false);
+			host_matrix<T> result(_m._d->rows(),_m._d->cols());
+			MatrixXf* rptr=result.getData(),*rhptr=rhs.getData();
+			*rptr=_m._d->transpose()+*rhptr;
 			return result;
 		}
 		host_matrix<T> operator - (const host_matrix<T>& rhs) {
-			host_matrix<T> result(_m._rows,_m.cols);
-			host_geam(_m,rhs,result,(T)1.0,(T)-1.0,true,false);
+			host_matrix<T> result(_m._d->rows(),_m._d->cols());
+			MatrixXf* rptr=result.getData(),*rhptr=rhs.getData();
+			*rptr=_m._d->transpose()-*rhptr;
 			return result;
 		}
 
 		host_matrix<T> operator * (const host_matrix<T>& rhs) {
-			host_matrix<T> result(_m.cols,rhs._cols);
-			host_gemm(_m,rhs,result,(T)1.0,(T)0.0,true,false);
+			host_matrix<T> result(_m._d->cols(),rhs._d->cols());
+			MatrixXf* rptr=result.getData(),*rhptr=rhs.getData();
+			*rptr=_m._d->transpose()* (*rhptr);
 			return result;
 		}
 		host_matrix<T> operator * (const Transpose rhs) {
-			host_matrix<T> result(_m.cols,rhs._m._rows);
-			host_gemm(_m,rhs,result,(T)1.0,(T)0.0,true,true);
+			host_matrix<T> result(_m._d->cols(),rhs._m._d->rows());
+			MatrixXf* rptr=result.getData(),*rhptr=rhs.getData();
+			*rptr=_m._d->transpose() * rhptr->transpose();
 			return result;
 		}
 		void print(int precision=5){
 			cout<<fixed<<setprecision(precision);
-			for(size_t y=0;y<_m._cols;++y){
-				for(size_t x=0;x<_m._rows;++x)
+			for(size_t y=0;y<_m._d->cols();++y){
+				for(size_t x=0;x<_m._d->rows();++x)
 					cout<<setw(precision+4)<<(*_m._d)(x,y);
 				cout<<endl;
 			}

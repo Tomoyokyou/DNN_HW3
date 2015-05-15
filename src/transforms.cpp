@@ -16,37 +16,25 @@ typedef host_matrix<float> mat;
 
 /********************TRANSFORM**********************/
 
-Transforms::Transforms(const Transforms& t):_w(t._w),_i(t._i),_pw(t._pw){}
+Transforms::Transforms(const Transforms& t):_w(t._w),_pw(t._pw){}
 
 //Transforms::Transforms(const mat& w,const mat& b){ RNN
 Transforms::Transforms(const mat& w){
-	/*assert(b.getRows()==1 || b.getCols()==1);
-	size_t r=b.getRows(),c=b.getCols();
-	if(r==1){r=c;c=1;}
-	assert(w.getRows()==r);
-	_w.resize(w.getRows(),w.getCols()+1);
-	MatrixXf* wptr=_w.getData();
-	wptr->block(0,0,w.getRows(),w.getCols())=*w.getData();
-	wptr->block(w.getCols(),0,b.getRows(),1)=*b.getData();*/
 	_w=w;
 	_pw.resize(_w.getRows(),_w.getCols(),0);
 }
 
 Transforms::Transforms(size_t inputdim,size_t outputdim,float range){
-	//_w.resize(outputdim,inputdim+1); RNN
 	_w.resize(outputdim,inputdim);
 	rand_init(_w,range); // uniform distribution
 	_w/=sqrt((float)inputdim);
-	//_pw.resize(outputdim,inputdim+1,0); RNN
 	_pw.resize(outputdim,inputdim,0);
 }
 
 Transforms::Transforms(size_t inputdim,size_t outputdim,myNnGen& ran){
-	//_w.resize(outputdim,inputdim+1); RNN
 	_w.resize(outputdim,inputdim);
 	rand_norm(_w,ran);  // default variance = 0.1 , to change varance head to include/util.h
 	_w/=sqrt((float)inputdim);
-	//_pw.resize(outputdim,inputdim+1,0); RNN
 	_pw.resize(outputdim,inputdim);
 }
 size_t Transforms::getInputDim()const{
@@ -55,6 +43,7 @@ size_t Transforms::getInputDim()const{
 size_t Transforms::getOutputDim()const{
 	return _w.getRows();
 }
+mat Transforms::getWeight()const{return _w;}
 
 void Transforms::print(ofstream& out){
 
@@ -66,50 +55,38 @@ void Transforms::print(ofstream& out){
 			out<<setw(9)<<(*h_data)(t,k);
 		out<<endl;
 	}
-	/*  RNN HAS NO BIAS
-    out<<"<bias> "<<_w.getRows()<<endl;
-    for(size_t t=0;t<_w.getRows();++t)
-                out<<setw(9)<<(*h_data)(t,_w.getCols()-1);
-	out << endl;
-	*/
 }
 
 /****************************************************/
 /********************SIGMOID*************************/
 Sigmoid::Sigmoid(const Sigmoid& s): Transforms(s){
 }
-//Sigmoid::Sigmoid(const mat& w, const mat& bias): Transforms(w,bias){ RNN
 Sigmoid::Sigmoid(const mat& w): Transforms(w){
 }
 Sigmoid::Sigmoid(size_t inputdim,size_t outputdim,float range): Transforms(inputdim,outputdim,range){
 }
 Sigmoid::Sigmoid(size_t inputdim,size_t outputdim,myNnGen& ran): Transforms(inputdim,outputdim,ran){
 }
-void Sigmoid::forward(mat& out,const mat& in,bool train){
-	/*mat _inp(in);
-	pushOne(_inp);
-	out=sigmoid(_w * _inp);*/
+void Sigmoid::forward(mat& out,const mat& in){
 	out=sigmoid(_w * in);
-	if(train){
-		_i=in;
-	}
 }
-void Sigmoid::backPropagate(mat& out,const mat& delta, float rate,float momentum,float regularization){
-	assert( (delta.getRows()==_w.getRows()) && (delta.getCols()==_i.getCols()) );
+void Sigmoid::backPropagate(const mat& fin,const mat& delta, float rate,float momentum,float regularization){
+	assert( (delta.getRows()==_w.getRows()) && (delta.getCols()==fin.getCols()) );
 
-	mat sigdiff=_i & ((float)1.0-_i);
-	MatrixXf* optr=out.getData(),*dptr=delta.getData(),*sdptr=sigdiff.getData();
+	//mat sigdiff=_i & ((float)1.0-_i);
+	//mat sigdiff =  fin & ((float)1.0-fin);
+	//MatrixXf* optr=out.getData(),*dptr=delta.getData(),*sdptr=sigdiff.getData();
 
 	/*MatrixXf wbias=_w.getData()->block(0,0,_w.getRows(),_w.getCols()-1);
 	*optr = sdptr->cwiseProduct(wbias.transpose() * (*dptr));*/
-	MatrixXf* wptr=_w.getData();
-	*optr = sdptr->cwiseProduct(wptr->transpose() * (*dptr));
+	//MatrixXf* wptr=_w.getData();
+	//*optr = sdptr->cwiseProduct(wptr->transpose() * (*dptr));
 	// update weight
 	/*mat _inp(_i);
 	pushOne(_inp);
 	_pw= delta * ~_inp + _pw * momentum;*/
-	rate/=(float)_i.getCols();
-	_pw= (delta * ~_i) * rate + _w * regularization + _pw * momentum;
+	rate/=(float)fin.getCols();
+	_pw= (delta * ~fin) * rate + _w * regularization + _pw * momentum;
 	_w -= _pw;
 
 }
@@ -129,36 +106,23 @@ Softmax::Softmax(size_t inputdim,size_t outputdim,float range): Transforms(input
 }
 Softmax::Softmax(size_t inputdim,size_t outputdim,myNnGen& ran): Transforms(inputdim,outputdim,ran){
 }
-void Softmax::forward(mat& out,const mat& in,bool train){
-	/*mat inp=in;
-	pushOne(inp);
-	mat z=_w * inp;
-	out=softmax(z);*/
+void Softmax::forward(mat& out,const mat& in){
 	out=softmax(_w * in);
-	if(train){
-		_i=in;
-	}
 }
 
-void Softmax::backPropagate(mat& out,const mat& delta,float rate, float momentum, float regularization=0.0){
-	assert( (delta.getRows()==_w.getRows()) && (delta.getCols()==_i.getCols()) );
+void Softmax::backPropagate(const mat& fin,const mat& delta,float rate, float momentum, float regularization=0.0){
+	assert( (delta.getRows()==_w.getRows()) && (delta.getCols()==fin.getCols()) );
 
-	mat sigdiff=_i & ((float)1.0-_i);
+	//mat sigdiff=fin & ((float)1.0-fin);
 	//MatrixXf wbias=_w.getData()->block(0,0,_w.getRows(),_w.getCols()-1);
-	MatrixXf *optr=out.getData(),*dptr=delta.getData(),*sdptr=sigdiff.getData();
+	//MatrixXf *optr=out.getData(),*dptr=delta.getData(),*sdptr=sigdiff.getData();
 	//*optr=sdptr->cwiseProduct(wbias.transpose() * (*dptr));
-	MatrixXf* wptr=_w.getData();
-	*optr=sdptr->cwiseProduct(wptr->transpose() * (*dptr));
+	//MatrixXf* wptr=_w.getData();
+	//*optr=sdptr->cwiseProduct(wptr->transpose() * (*dptr));
 
 	//update weight
-	/*
-	mat inp(_i);
-	pushOne(inp);
-	//reg dev
-	_pw=(delta* (~inp)) * rate + _w * regularization + _pw * momentum;
-	//_pw=delta * ~inp + _pw * momentum;*/
-	rate/=(float)_i.getCols();
-	_pw= (delta* ~_i) * rate + _w * regularization + _pw * momentum;
+	rate/=(float)fin.getCols();
+	_pw= (delta* ~fin) * rate + _w * regularization + _pw * momentum;
 	_w-= _pw;
 }
 void Softmax::write(ofstream& out){

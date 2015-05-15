@@ -42,8 +42,8 @@ public:
 	bool load(const string& fn);
 
 private:
-	void feedForward(mat& ouputMat, const mat& inputMat, bool train);
-	void backPropagate(const mat& foutMat, float learningRate, float momentum,float regularization);
+	void feedForward(const mat& inputMat,vector<mat>& fout);
+	void backPropagate(float learningRate, float momentum,float regularization,const vector<mat>& fin,const mat& answer);
 
 	//Dataset* _pData;
 	float _learningRate;
