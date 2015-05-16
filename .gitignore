@@ -3,7 +3,7 @@
 *.lo
 *.o
 *.obj
-./obj/*
+obj/*
 
 # Precompiled Headers
 *.gch
@@ -27,9 +27,13 @@
 *.exe
 *.out
 *.app
-./bin/*
+bin/*
 
 # MODEL
-./model/*
+model/*
 *.mdl
 *.csv
+
+# Backup file
+*.orig
+./**/*.orig

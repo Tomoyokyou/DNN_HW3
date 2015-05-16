@@ -3,7 +3,11 @@
 *.lo
 *.o
 *.obj
+<<<<<<< HEAD
 ./obj/*
+=======
+obj/*
+>>>>>>> master
 
 # Precompiled Headers
 *.gch
@@ -28,14 +32,17 @@
 *.out
 *.app
 <<<<<<< HEAD
-bin/*
-
-model/*
-=======
 ./bin/*
 
 # MODEL
 ./model/*
->>>>>>> 83de668d99776f89136a94a92e92e2eac338fecf
 *.mdl
 *.csv
+=======
+bin/*
+
+# Others
+model/*
+
+
+>>>>>>> master
