@@ -44,7 +44,7 @@ size_t Transforms::getOutputDim()const{
 	return _w.getRows();
 }
 mat Transforms::getWeight()const{return _w;}
-
+mat Transforms::getGradient()const{return _pw;}
 void Transforms::print(ofstream& out){
 
 	MatrixXf* h_data = _w.getData();
@@ -130,3 +130,81 @@ void Softmax::write(ofstream& out){
 	print(out);
 }
 /*****************************************************/
+/********************RECURSIVE************************/
+
+Recursive::Recursive(const Recursive& s): Transforms(s),_step(s._step),_counter(0),_h(s._h){	
+	_mem.resize(s._w.getRows(),1,0);
+}
+
+Recursive::Recursive(const mat& w,const mat& h,int step): Transforms(w),_step(step),_h(h),_counter(0){
+	_mem.resize(w.getRows(),1,0);
+}
+Recursive::Recursive(size_t inputdim,size_t outputdim,float range,int step): Transforms(inputdim,outputdim,range),_step(step),_counter(0){
+	_h.resize(outputdim,outputdim);
+	rand_init(_h,range);
+	_h/=sqrt((float)outputdim);
+	_mem.resize(outputdim,1,0);
+}
+Recursive::Recursive(size_t inputdim,size_t outputdim,myNnGen& ran,int step): Transforms(inputdim,outputdim,ran),_step(step),_counter(0){
+	_h.resize(outputdim,outputdim);
+	rand_norm(_h,ran);
+	_h/=sqrt((float)outputdim);
+	_mem.resize(outputdim,1,0);
+}
+void Recursive::forward(mat& out,const mat& in){
+	out=sigmoid(_w*in+_h*_mem);
+	_mem=out;
+	if(_counter<_step){
+		_history.push_back(in);
+		_counter++;
+	}
+	else{
+		_history.erase(_history.begin());
+		_history.push_back(in);
+	}
+}
+
+void Recursive::backPropagate(const mat& fin,const mat& delta,float rate,float momentum,float regularization){
+	bptt(delta,rate,regularization);
+}
+
+void Recursive::write(ofstream& out){
+	out<<"<recursive> "<<_w.getRows()<<" "<<_w.getCols()<<endl;
+	print(out);
+	MatrixXf* hptr=_h.getData();
+	out<<"<memory> "<<_h.getRows()<<" "<<_h.getCols()<<endl;
+	out<<fixed<<setprecision(6);
+	for(size_t t=0;t<_h.getRows();++t){
+		for(size_t k=0;k<_h.getCols();++k)
+			out<<setw(9)<<(*hptr)(t,k);
+		out<<endl;
+	}
+}
+
+void bptt(const mat& delta,float rate,float regularization){
+	
+}
+
+/**************************
+	HUI BPTT
+***************************/
+/*void bptt(size_t step,const vector<mat>& x,const mat& xw,const mat& mem,const mat& ans){
+	assert(step==x.size());  // # of feat. must match 
+	vector<mat> feat;
+	//   UNFOLD COMPLETE
+
+	mat memInit(mem.getCols(),1,0);  // initialize memory with 0
+	mat lastout;
+	vector<mat> outList(step);  // output of activations except Softmax
+	vector<mat> memList(step);
+	outList[0]=sigmoid(mem*memInit + xw * x[0]); // this may explode !!!!
+	for(size_t t=1;t<step;++t){
+		outList[t]=sigmoid(mem*outList[t-1]+xw*x[t]);
+	}
+
+	//TODO
+
+}	
+*/
+
+/******************************************************/
