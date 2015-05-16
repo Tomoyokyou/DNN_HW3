@@ -8,7 +8,7 @@ EIGENDIR=/usr/local/include/eigen3/
 EXECUTABLES=train predict
 LIBCUMATDIR=tool/libcumatrix/
 CUMATOBJ=$(LIBCUMATDIR)obj/device_matrix.o $(LIBCUMATDIR)obj/cuda_memory_manager.o
-HEADEROBJ=obj/util.o obj/transforms.o obj/dnn.o obj/dataset.o obj/parser.o
+HEADEROBJ=obj/util.o obj/transforms.o obj/dnn.o obj/dataset.o obj/parser.o obj/testViterbi.o
 
 LIBS=$(LIBCUMATDIR)lib/libcumatrix.a
 # +==============================+
@@ -47,6 +47,7 @@ DIR:
 	@mkdir -p obj
 	@mkdir -p bin
 
+larry: example/testViterbi.cpp
 
 train:$(HEADEROBJ) example/train.cpp
 	@echo "compiling train.app for DNN Training"
