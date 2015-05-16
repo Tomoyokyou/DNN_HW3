@@ -249,7 +249,7 @@ void DNN::backPropagate(float learningRate, float momentum,float regularization,
 	size_t size=_transforms.size();
 	_transforms.back()->backPropagate(fin.at(size),err[size-1],learningRate,momentum,regularization); //for softmax
 	for(int i=0;i<_transforms.size()-1;i++){
-		calError(err[size-2-i],fin.at(size-i),_transforms[size-2-i],err.at(size-1-i));
+		calError(err[size-2-i],fin.at(size-1-i),_transforms[size-2-i],err.at(size-1-i));
 		_transforms[size-2-i]->backPropagate(fin.at(size-1-i),err.at(size-2-i),learningRate,momentum,regularization); //for softmax
 	}
 /*
