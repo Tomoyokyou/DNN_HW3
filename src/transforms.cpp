@@ -181,8 +181,30 @@ void Recursive::write(ofstream& out){
 	}
 }
 
-void bptt(const mat& delta,float rate,float regularization){
-	
+void Recursive::bptt(const mat& delta,float rate,float regularization){
+	int num=(_counter<_step)? _counter : _step;
+	vector<mat> outset(num);
+	//for H mat  NOTE: can be a mat only, announce a vector for debug.
+	vector<mat> deltaset(num);
+	mat graW;
+	mat graH;
+	outset[0]=sigmoid(_w*_history[0]); //init=0;
+	//feed forward  for unfold DNN
+	for(size_t t=1;t<num;++t){
+		outset[t]=sigmoid(_w*_history[t]+_h*outset[t-1]);
+	}
+	//back propagation of unfold DNN
+	graW=(delta* ~_history[num-1]) *rate + _w * regularization;
+	graH=(delta* ~outset[num-1]) *rate + _h * regularization;
+	deltaset[num-1]=(outset[num-1]&((float)1.0-outset[num-1]) & (~_h * delta));
+	for(int j=num-2;j>=0;j--){
+		graW=(deltaset[j+1]* ~ _history[j]) * rate + _w *regularization;
+		graH=(deltaset[j+1]* ~ outset[j]) * rate + _h * regularization;
+		deltaset[j]=(outset[j]&((float)1.0-outset[j])& (~_h * deltaset[j+1]));
+	}
+	//update weight
+	_w-= graW/(float)num;
+	_h-= graH/(float)num;
 }
 
 /**************************
