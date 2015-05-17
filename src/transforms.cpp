@@ -210,23 +210,5 @@ void Recursive::bptt(const mat& delta,float rate,float regularization){
 /**************************
 	HUI BPTT
 ***************************/
-/*void bptt(size_t step,const vector<mat>& x,const mat& xw,const mat& mem,const mat& ans){
-	assert(step==x.size());  // # of feat. must match 
-	vector<mat> feat;
-	//   UNFOLD COMPLETE
-
-	mat memInit(mem.getCols(),1,0);  // initialize memory with 0
-	mat lastout;
-	vector<mat> outList(step);  // output of activations except Softmax
-	vector<mat> memList(step);
-	outList[0]=sigmoid(mem*memInit + xw * x[0]); // this may explode !!!!
-	for(size_t t=1;t<step;++t){
-		outList[t]=sigmoid(mem*outList[t-1]+xw*x[t]);
-	}
-
-	//TODO
-
-}	
-*/
 
 /******************************************************/
