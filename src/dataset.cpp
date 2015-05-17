@@ -12,10 +12,14 @@ typedef host_matrix<float> mat;
 Dataset::Dataset(){
 	_featureDim = 0;
 	_wordNum = 0;
+	_sentCtr = 0;
+	_trainSentCtr = 0;
 }
 
 Dataset::Dataset(const char* featurePath, const char* classPath, const char* sntPath){
 	// initializing
+	_sentCtr = 0;
+	_trainSentCtr = 0;
 	cout << "inputting word2vec file:\n";	
 	ifstream fin(featurePath);
 	if(!fin) cout<<"Can't open word2vec file!!!\n";
@@ -80,7 +84,7 @@ Dataset::Dataset(const char* featurePath, const char* classPath, const char* snt
 	cout <<"total words in map: "<< _wordMap.size() << endl;
 	cout << "read sentence done!!!\n";
 	sntFin.close();
-	
+	dataSegment( 0.95);
 
 };
 
@@ -96,7 +100,10 @@ mat Word::getOneOfNOutput(int wordNum) {
 	float* tmpPtr = new float[wordNum];
 	for (int i = 0; i < wordNum; i++)
 		tmpPtr[i] = 0;
-	tmpPtr[_classLabel] = 1;
+	if (_classLabel < wordNum)
+		tmpPtr[_classLabel] = 1;
+	else
+		tmpPtr[wordNum - 1] = 1;
 	mat temp(tmpPtr, wordNum, 1);
 	return temp;
 }
@@ -115,4 +122,23 @@ Sentence Dataset::getSentence() {
 		_sentCtr = 0;
 	return tmp;
 }
-
+Sentence Dataset::getTrainSent() {
+	Sentence tmp = _data[_trainLabel[_trainSentCtr]];
+	_trainSentCtr++;
+	if (_trainSentCtr == _trainLabel.size())
+		_trainSentCtr = 0;
+	return tmp;
+}
+void Dataset::dataSegment(float trainProp = 0.95){
+	int trainSize = trainProp * _data.size();
+	vector<int> tmpLabel;
+	for (int i = 0; i < _data.size(); i++)
+		tmpLabel.push_back(i);
+	random_shuffle ( tmpLabel.begin(), tmpLabel.end() );
+	vector<int> tmpTrain(tmpLabel.begin(), tmpLabel.begin() + trainSize);
+	vector<int> tmpValid(tmpLabel.begin() + trainSize, tmpLabel.end());
+	_trainLabel = tmpTrain;
+	_validLabel = tmpValid;
+	//cout << _trainLabel.size() << endl;
+	//cout << _validLabel.size() << endl;
+}

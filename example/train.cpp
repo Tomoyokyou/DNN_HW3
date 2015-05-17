@@ -1,5 +1,5 @@
 #include "parser.h"
-#include "dnn.h"
+#include "rnn.h"
 #include "dataset.h"
 #include "util.h"
 #include <iostream>
@@ -68,9 +68,9 @@ int main(int argc,char** argv){
 	else{
 	vector<size_t>dim;
 	parseDim(dims,dim);
-	DNN dnn(rate,momentum,reg,var,_inittype,dim,BATCH);
-	dnn.train(allData,b_size,m_e,0.8,decay);
-	dnn.save(outF);
+	RNN rnn(rate,momentum,reg,var,_inittype,dim,ALL, 5);
+	rnn.train(allData,m_e,0.8,decay);
+	//rnn.save(outF);
 	}
 	cout<<"end of training!";
 	cout<<"\n model saved as :"<<outF<<endl;

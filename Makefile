@@ -8,7 +8,7 @@ EIGENDIR=/usr/local/include/eigen3/
 EXECUTABLES=train predict
 LIBCUMATDIR=tool/libcumatrix/
 CUMATOBJ=$(LIBCUMATDIR)obj/device_matrix.o $(LIBCUMATDIR)obj/cuda_memory_manager.o
-HEADEROBJ=obj/util.o obj/transforms.o obj/dnn.o obj/dataset.o obj/parser.o
+HEADEROBJ=obj/util.o obj/transforms.o obj/rnn.o obj/dataset.o obj/parser.o
 
 LIBS=$(LIBCUMATDIR)lib/libcumatrix.a
 # +==============================+
@@ -56,7 +56,7 @@ predict:$(HEADEROBJ) example/predict.cpp
 	@echo "compiling predict.app for DNN Testing"
 	@$(CXX) $(CPPFLAGS) $(INCLUDE) -o bin/$@.app $^ $(LIBS) $(LIBRARY) $(LD_LIBRARY)
 
-jason:obj/dataset.o example/dataTest.cpp
+jason:$(HEADEROBJ) example/dataTest.cpp
 	@echo "compiling dataTest.app for Dataset Testing"
 	@$(CXX) $(CPPFLAGS) $(INCLUDE) -o bin/$@.app $^ $(LIBS) $(LIBRARY) $(LD_LIBRARY)
 clean:
