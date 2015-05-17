@@ -293,6 +293,7 @@ void calError(mat& errout,const mat& fin,Transforms* act,const mat& delta){
 		case SIGMOID:
 			errout=sigdiff & ( ~w * delta);
 			break;
+		case RECURSIVE:
 		case SOFTMAX:
 		default:
 			break;
