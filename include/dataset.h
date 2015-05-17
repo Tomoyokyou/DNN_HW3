@@ -10,8 +10,6 @@
 #include <unordered_map>
 #include "host_matrix.h"
 
-#define LABEL_NUM 48
-#define OUTPUT_NUM 48
 using namespace std;
 typedef host_matrix<float> mat;
 
@@ -22,6 +20,8 @@ class Word{
 		_classLabel(clabel), _index(index), _feature(feature) {}
 		int getClassLabel() {return _classLabel; }
 		int getIndex() {return _index; }
+		mat getOneOfNOutput(int wordNum);
+		mat getMatFeature();
 		vector<double>& getFeature() {return _feature; }
 		int getFeatureDim() {return _feature.size(); }
 	private:
@@ -35,6 +35,7 @@ class Sentence: public Word{
 		Sentence() {}
 		vector<Word*>& getSent() {return _sentence; }
 		int getSize() {return _sentence.size(); }
+		Word* getWord(int i) {return _sentence[i];}
 	private:
 		vector<Word*> _sentence;
 };
@@ -45,42 +46,24 @@ class Dataset{
 	
 	Dataset(const char* featurePath, const char* classPath, const char* sntPath);
 	
-	//Dataset(Data data, char mode);
 	Dataset(const Dataset& data);
-	~Dataset();
+	~Dataset() {}
 	
-	//mat getData();	
 	size_t getSentenceNum() {return _data.size(); }
 	size_t getFeatureDim() {return _featureDim; }
 	size_t getWordNum() {return _wordNum;}	
-	//vector<size_t> getLabel_vec();
-	//mat getLabel_mat();
-	
-	
-	//map<string, int> getLabelMap();
-	//map<string, string> getTo39PhonemeMap();
-	
-	//void   getBatch(int batchSize, mat& batch, mat& batchLabel, bool isRandom);
-	//bool   getRecogData(int batchSize, mat& batch, vector<size_t>& batchLabel);  
-	//void   getTrainSet(int trainSize, mat& trainData, vector<size_t>& trainLabel);
-	//void   getValidSet(int validSize, mat& validData, vector<size_t>& validLabel);
-	//void   dataSegment( Dataset& trainData, Dataset& validData, float trainProp = 0.8);
-	//void   printLabelMap(map<string, int> labelMap);
-	//void   printTo39PhonemeMap(map<string, string>);
-	//void   prtPointer(float** input, int r, int c);
-	//void   loadTo39PhonemeMap(const char*);
-	//void   saveCSV(vector<size_t> testResult);
-    //bool  isLabeled( ){ return _isLabeled; }	
+	void   resetSentCtr() {_sentCtr = 0;}
+	Sentence getSentence();
+	size_t getSentCtr() {return _sentCtr;}
+
+	void dataSegment(float trainProp);
 private:
-	// dataset parameters
 	size_t _featureDim;
 	size_t _wordNum;
-	//mat    outputNumtoBin(int* outputVector, int vectorSize);
-	// change 0~47 to a 48 dim mat
-	//mat    inputFtreToMat(float** input, int r, int c);	
-    // void   prtPointer(float** input, int r, int c);	
-	
-	// original data
+	size_t _sentCtr;
+	vector<int> _trainLabel;
+	vector<int> _validLabel;
+
 	vector<Sentence> _data;
 	unordered_map<string, Word*> _wordMap;
 	
