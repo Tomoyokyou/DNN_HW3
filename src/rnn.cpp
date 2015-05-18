@@ -88,6 +88,7 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 		for (int wordCnt = 0; wordCnt < crtSent.getSize(); wordCnt++){
 			mat inputMat = crtSent.getWord(wordCnt)->getMatFeature();
 			mat tmpOutput;
+			//cout<<"inputmat:"<<inputMat.getRows()<<" "<<inputMat.getCols()<<endl;
 			feedForward(inputMat, fout);
 			//fout.push_back(tmpOutput);
 			backPropagate(_learningRate, _momentum,_reg,fin,crtSent.getWord(wordCnt)->getOneOfNOutput(2000)); //momentum

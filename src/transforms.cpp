@@ -152,6 +152,8 @@ Recursive::Recursive(size_t inputdim,size_t outputdim,myNnGen& ran,int step): Tr
 	_mem.resize(outputdim,1,0);
 }
 void Recursive::forward(mat& out,const mat& in){
+	//cout<<"forward:\n";
+	//cout<<in.getRows()<<" "<<in.getCols()<<endl;
 	out=sigmoid(_w*in+_h*_mem);
 	_mem=out;
 	if(_counter<_step){

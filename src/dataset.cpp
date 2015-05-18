@@ -105,14 +105,17 @@ mat Word::getOneOfNOutput(int wordNum) {
 	else
 		tmpPtr[wordNum - 1] = 1;
 	mat temp(tmpPtr, wordNum, 1);
+	delete [] tmpPtr;
 	return temp;
 }
 
 mat Word::getMatFeature() {
+	cout<<"feature size:"<<_feature.size()<<endl;
 	float* tmpPtr = new float[_feature.size()];
 	for (int i = 0; i < _feature.size(); i++)
 		tmpPtr[i] = _feature[i];
 	mat temp(tmpPtr, _feature.size(), 1);
+	delete [] tmpPtr;
 	return temp;
 }
 Sentence Dataset::getSentence() {

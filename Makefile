@@ -1,11 +1,11 @@
 CC=gcc
 CXX=g++
-CPPFLAGS= -O3 -std=c++11
+CPPFLAGS= -g -O3 -std=c++11
 NVCC=nvcc -arch=sm_21 -w
 CUDA_DIR=/usr/local/cuda/
 EIGENDIR=/usr/local/include/eigen3/
 
-EXECUTABLES=train predict
+EXECUTABLES=#train predict
 LIBCUMATDIR=tool/libcumatrix/
 CUMATOBJ=$(LIBCUMATDIR)obj/device_matrix.o $(LIBCUMATDIR)obj/cuda_memory_manager.o
 HEADEROBJ=obj/util.o obj/transforms.o obj/rnn.o obj/dataset.o obj/parser.o
@@ -17,9 +17,10 @@ LIBS=$(LIBCUMATDIR)lib/libcumatrix.a
 
 .PHONY: debug all clean 
 
-all:DIR TOOL $(EXECUTABLES)
+all:DIR TOOL $(HEADEROBJ) $(EXECUTABLES)
 
-debug: CPPFLAGS+=-g -DDEBUG 
+debug:CPPFLAGS+=-g -DDEBUG
+
 
 vpath %.h include/
 vpath %.cpp src/
