@@ -68,7 +68,7 @@ private:
 	vector<int> _validLabel;
 
 	vector<Sentence> _data;
-	unordered_map<string, Word*> _wordMap;
+	unordered_map<string, Word> _wordMap;
 	
 };
 

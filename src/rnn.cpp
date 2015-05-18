@@ -10,6 +10,7 @@
 #include "rnn.h"
 #include "util.h"
 #include "dataset.h"
+#include "transforms.h"
 
 #define MAX_EPOCH 1000
 
@@ -19,7 +20,7 @@ typedef host_matrix<float> mat;
 
 float computeErrRate(const vector<size_t>& ans, const vector<size_t>& output);
 void computeLabel(vector<size_t>& result,const mat& outputMat);
-void calError(mat& errout,const mat& fin,Transforms* act,const mat& delta);
+void calError(mat& errout,const mat& fin,Transforms* act,Transforms* nex,const mat& delta);
 
 
 RNN::RNN():_learningRate(0.001),_momentum(0), _method(ALL){}
@@ -77,21 +78,22 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 	size_t oneEpoch = data.getTrainSentNum();
 	size_t epochCnt = 0;
 	size_t num = 0;
-	vector<mat> fout, fin;
+	vector<mat> fin;
 	vector<size_t> validResult;
 	for(; epochCnt < maxEpoch; num++){   // increment by sentence
 
 		Sentence crtSent = data.getTrainSent();
-		fout.clear();
 		fin.clear();
 		// push back first word
 		for (int wordCnt = 0; wordCnt < crtSent.getSize(); wordCnt++){
-			mat inputMat = crtSent.getWord(wordCnt)->getMatFeature();
-			mat tmpOutput;
+			num++;
+			mat inputMat = crtSent.getWord(wordCnt)->getMatFeature(); // the w2v feature of new input word
 			//cout<<"inputmat:"<<inputMat.getRows()<<" "<<inputMat.getCols()<<endl;
-			feedForward(inputMat, fout);
+			feedForward(inputMat, fin);
 			//fout.push_back(tmpOutput);
-			backPropagate(_learningRate, _momentum,_reg,fin,crtSent.getWord(wordCnt)->getOneOfNOutput(2000)); //momentum
+			backPropagate(_learningRate, _momentum,_reg,fin,crtSent.getWord(wordCnt)->getOneOfNOutput(2000)); 
+			if(num%1000==0)
+				cout<<"Iter: "<<num<<endl; 
 		}
 		/*
 		if( num % 2000 == 0 ){
@@ -223,7 +225,7 @@ void RNN::feedForward(const mat& inputMat,vector<mat>& fout){
 	fout.resize(_transforms.size()+1);//
 	fout[0]=inputMat;
 	_transforms.at(0)->forward(fout[1],fout[0]);
-	for(size_t i = 1; i < _transforms.size(); i++){
+	for(size_t i = 0; i < _transforms.size(); i++){
 		(_transforms.at(i))->forward(fout[i+1],fout[i] );
 		//tempInputMat = outputMat;
 	}
@@ -240,12 +242,12 @@ void RNN::getHiddenForward(mat& outputMat, const mat& inputMat){
 void RNN::backPropagate(float learningRate, float momentum,float regularization,const vector<mat>& fin,const mat& answer){
 	vector<mat> err;
 	err.resize(_transforms.size());
-	err.back() = fin.back()-answer;  //cross entropy gradient
+	err.back() = fin.back() - answer;  //cross entropy gradient
 	size_t size=_transforms.size();
-	_transforms.back()->backPropagate(fin.at(size),err[size-1],learningRate,momentum,regularization); //for softmax
+	_transforms.back()->backPropagate(fin.at(size-1),err[size-1],learningRate,momentum,regularization); //for softmax
 	for(int i=0;i<_transforms.size()-1;i++){
-		calError(err[size-2-i],fin.at(size-1-i),_transforms[size-2-i],err.at(size-1-i));
-		_transforms[size-2-i]->backPropagate(fin.at(size-1-i),err.at(size-2-i),learningRate,momentum,regularization); //for softmax
+		calError(err[size-2-i],fin.at(size-1-i),_transforms[size-1-i],_transforms[size-2-i],err.at(size-1-i));
+		_transforms[size-2-i]->backPropagate(fin.at(size-2-i),err.at(size-2-i),learningRate,momentum,regularization);
 	}
 /*
 	mat errorMat;
@@ -279,12 +281,13 @@ float computeErrRate(const vector<size_t>& ans, const vector<size_t>& output){
 	return 1.0-(float)accCount/(float)ans.size();
 }
 
-void calError(mat& errout,const mat& fin,Transforms* act,const mat& delta){
+void calError(mat& errout,const mat& fin,Transforms* act,Transforms* nex,const mat& delta){
 	//modified
-	ACT type=act->getAct();
-	mat sigdiff(fin & ((float)1.0-fin));
+	ACT type=nex->getAct();
+	mat sigdiff=fin & ((float)1.0-fin);
 	mat w(act->getWeight());
 	switch(type){
+		case RECURSIVE:
 		case SIGMOID:
 			errout=sigdiff & ( ~w * delta);
 			break;

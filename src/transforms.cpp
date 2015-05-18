@@ -129,6 +129,7 @@ void Softmax::write(ofstream& out){
 	out<<"<softmax> "<<_w.getRows()<<" "<<_w.getCols()<<endl;
 	print(out);
 }
+
 /*****************************************************/
 /********************RECURSIVE************************/
 
@@ -196,6 +197,7 @@ void Recursive::bptt(const mat& delta,float rate,float regularization){
 		outset[t]=sigmoid(_w*_history[t]+_h*outset[t-1]);
 	}
 	//back propagation of unfold DNN
+	mat debug=_history[num-1];
 	graW=(delta* ~_history[num-1]) *rate + _w * regularization;
 	graH=(delta* ~outset[num-1]) *rate + _h * regularization;
 	deltaset[num-1]=(outset[num-1]&((float)1.0-outset[num-1]) & (~_h * delta));

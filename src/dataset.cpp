@@ -47,11 +47,25 @@ Dataset::Dataset(const char* featurePath, const char* classPath, const char* snt
 			feature.push_back(tmp);
 		}
 		Word tmpWord (cLabel, i, feature);
-		_wordMap[wordName] = &tmpWord;
+		_wordMap[wordName] = tmpWord;
 		//cout << wordName << " " << i << " " << cLabel << endl;
 		//cout << wordName << " " << _wordMap[wordName]->getIndex() << " " << _wordMap[wordName]->getClassLabel() << endl;
 	}
-	//cout << _wordMap.size()<< endl;
+	
+	//debugging
+	/*
+	cout <<_wordMap.size()<<"yo"<<endl;
+	auto it = _wordMap.begin();
+	for (int i = 0 ; it != _wordMap.end(); it ++, i++){
+		cout << it->first << " " << i << " ";
+		cout << _wordMap[it->first].getIndex() << endl;
+		cout << it->second.getClassLabel() << endl;
+		//for (int x = 0; x < it->second->getFeatureDim(); x++)
+		//	it->second->getMatFeature().print();
+		//cout << endl;
+	}
+	*/
+	// end debugging
 	fin.close();
 	classFin.close();
 	cout << "inputting sentence file:\n";
@@ -63,14 +77,22 @@ Dataset::Dataset(const char* featurePath, const char* classPath, const char* snt
 	while(sntFin >> tmpStr){
 		bla ++;
 		if ( _wordMap.find(tmpStr) == _wordMap.end()){
+			cout << "new word!!\n";
 			Word tmpWord;
-			_wordMap[tmpStr] = &tmpWord;
+			_wordMap[tmpStr] = tmpWord;
 			//cout << tmpStr << endl;
 		}
-		tmpSent.getSent().push_back(_wordMap[tmpStr]);
-		//cout << tmpStr << " ";
-		//cout << _wordMap[tmpStr]->getIndex() << endl;
-		//cout << tmpStr << " ";
+		
+		auto it = _wordMap.find(tmpStr);
+		//unordered_map<string, Word*> const_iterator it = _wordMap.find(tmpStr);
+		tmpSent.getSent().push_back(&it->second);
+		/*
+		cout << tmpStr << " ";
+		cout << it->first << endl;
+		cout << it->second.getIndex() << endl;
+		cout << it->second.getFeatureDim() << endl;
+		cout << it->second.getClassLabel() << endl;
+		*/
 		if (tmpStr.compare("</s>") == 0){
 			//cout << tmpSent.getSent().size() << " yo "; 
 			Sentence toBeStored(tmpSent);
@@ -78,6 +100,12 @@ Dataset::Dataset(const char* featurePath, const char* classPath, const char* snt
 			_data.push_back(toBeStored);
 			tmpSent.getSent().clear();
 			//cout << toBeStored.getSent().size() << " " << endl;
+			// debugging
+			/*cout << "sentence size is : " << tmpSent.getSize() << endl;
+			for (int x = 0; x < tmpSent.getSize(); x++)
+				cout << tmpSent.getWord(x)->getIndex() << " ";
+			cout << endl;
+			*/
 		}
 	}
 	cout <<"words not in w2v: "<< bla << endl;
@@ -110,7 +138,6 @@ mat Word::getOneOfNOutput(int wordNum) {
 }
 
 mat Word::getMatFeature() {
-	cout<<"feature size:"<<_feature.size()<<endl;
 	float* tmpPtr = new float[_feature.size()];
 	for (int i = 0; i < _feature.size(); i++)
 		tmpPtr[i] = _feature[i];
