@@ -86,11 +86,12 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 		fin.clear();
 		// push back first word
 		for (int wordCnt = 0; wordCnt < crtSent.getSize(); wordCnt++){
-			mat inputMat = crtSent.getWord(wordCnt)->getMatFeature();
+			mat inputMat = crtSent.getWord(wordCnt)->getMatFeature(); // the w2v feature of new input word
+			fin.push_back(inputMat); 
 			mat tmpOutput;
 			feedForward(inputMat, fout);
 			//fout.push_back(tmpOutput);
-			backPropagate(_learningRate, _momentum,_reg,fin,crtSent.getWord(wordCnt)->getOneOfNOutput(2000)); //momentum
+			backPropagate(_learningRate, _momentum,_reg,fin,crtSent.getWord(wordCnt)->getOneOfNOutput(2000)); 
 		}
 		/*
 		if( num % 2000 == 0 ){
