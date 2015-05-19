@@ -206,7 +206,8 @@ bool RNN::load(const string& fn){
 					tempStr.assign(buf);
 					found = tempStr.find_first_of(">");
 					stringstream ss2(tempStr.substr(found+1));
-					ss2 >> rows >> cols;
+					size_t step;
+					ss2 >> rows >> cols >> step;
 					rowNum = stoi(rows);
 					colNum = stoi(cols);
 					totalEle = rowNum * colNum;
@@ -222,7 +223,7 @@ bool RNN::load(const string& fn){
 						}
 					}
 					mat memoryMat(h_data_mem, rowNum, colNum);
-					pTransform = new Recursive(weightMat, memoryMat, 5);
+					pTransform = new Recursive(weightMat, memoryMat, step);
 					delete [] h_data_mem;
 				}
 				else if(type == "softmax"){
