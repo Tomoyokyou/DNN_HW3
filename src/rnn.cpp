@@ -125,7 +125,7 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 						tmpAns = 2000 -1;
 					MatrixXf* tmp = fin.back().getData();
 					//float err = *(fin.back().getData())[tmpAns];
-					newEntropy += (*tmp)(tmpAns,0);
+					newEntropy -= log((*tmp)(tmpAns,0));
 					//cout << newEntropy << endl;	
 				}
 			}

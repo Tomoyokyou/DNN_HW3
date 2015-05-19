@@ -173,10 +173,9 @@ void Recursive::backPropagate(const mat& fin,const mat& delta,float rate,float m
 
 void Recursive::write(ofstream& out){
 	out<<"<recursive> "<<_w.getRows()<<" "<<_w.getCols()<<endl;
-	out<<"step "<<_step<<endl;
 	print(out);
 	MatrixXf* hptr=_h.getData();
-	out<<"<memory> "<<_h.getRows()<<" "<<_h.getCols()<<endl;
+	out<<"<memory> "<<_h.getRows()<<" "<<_h.getCols()<<" "<<_step<<endl;
 	out<<fixed<<setprecision(6);
 	for(size_t t=0;t<_h.getRows();++t){
 		for(size_t k=0;k<_h.getCols();++k)
@@ -203,8 +202,8 @@ void Recursive::bptt(const mat& delta,float rate,float regularization){
 	graH=(delta* ~outset[num-1]) *rate + _h * regularization;
 	deltaset[num-1]=(outset[num-1]&((float)1.0-outset[num-1]) & (~_h * delta));
 	for(int j=num-2;j>=0;j--){
-		graW=(deltaset[j+1]* ~ _history[j]) * rate + _w *regularization;
-		graH=(deltaset[j+1]* ~ outset[j]) * rate + _h * regularization;
+		graW+=(deltaset[j+1]* ~ _history[j]) * rate + _w *regularization;
+		graH+=(deltaset[j+1]* ~ outset[j]) * rate + _h * regularization;
 		deltaset[j]=(outset[j]&((float)1.0-outset[j])& (~_h * deltaset[j+1]));
 	}
 	//update weight
