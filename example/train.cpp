@@ -55,7 +55,7 @@ int main(int argc,char** argv){
 	Dataset allData(trainF.c_str());
 	
 	if(p.getString("--load",loadF)){
-		DNN nnload;
+		RNN nnload;
 		if(nnload.load(loadF)){
 		nnload.setLearningRate(rate);
 		nnload.setMomentum(momentum);

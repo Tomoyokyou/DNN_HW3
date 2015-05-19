@@ -48,7 +48,7 @@ DIR:
 	@mkdir -p obj
 	@mkdir -p bin
 
-larry:$(HEADEROBJ) example/testViterbi.cpp
+larry:$(HEADEROBJ) example/testLoadModel.cpp
 	@echo "compiling testViterbi.cpp"
 	@$(CXX) $(CPPFLAGS) $(INCLUDE) -o bin/$@.app $^ $(LIBS) $(LIBRARY) $(LD_LIBRARY)
 
@@ -66,6 +66,11 @@ jason:$(HEADEROBJ) example/dataTest.cpp
 clean:
 	@echo "All objects and executables removed"
 	@rm -f $(EXECUTABLES) obj/* bin/*.app
+
+cleanOrig:
+	@echo "All backup file *.orig removed"
+	@find . -name "*.orig" -type f
+	@find . -name "*.orig" -type f -delete
 
 ctags:
 	@rm -f src/tags tags
