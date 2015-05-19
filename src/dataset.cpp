@@ -159,6 +159,13 @@ Sentence Dataset::getTrainSent() {
 		_trainSentCtr = 0;
 	return tmp;
 }
+Sentence Dataset::getValidSent() {
+	Sentence tmp = _data[_validLabel[_validSentCtr]];
+	_validSentCtr++;
+	if (_validSentCtr == _validLabel.size())
+		_validSentCtr = 0;
+	return tmp;
+}
 void Dataset::dataSegment(float trainProp = 0.95){
 	int trainSize = trainProp * _data.size();
 	vector<int> tmpLabel;

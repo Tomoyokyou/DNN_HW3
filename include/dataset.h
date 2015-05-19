@@ -54,16 +54,20 @@ class Dataset{
 	size_t getWordNum() {return _wordNum;}	
 	void   resetSentCtr() {_sentCtr = 0;}
 	void   resetTrainSentCtr() {_trainSentCtr = 0;}
+	void   resetValidSentCtr() {_validSentCtr = 0;}
 	Sentence getSentence();
 	Sentence getTrainSent();
+	Sentence getValidSent();
 	size_t getSentCtr() {return _sentCtr;}
 	size_t getTrainSentNum() {return _trainLabel.size();}
+	size_t getValidSentNum() {return _validLabel.size();}
 	void dataSegment(float trainProp);
 private:
 	size_t _featureDim;
 	size_t _wordNum;
 	size_t _sentCtr;
 	size_t _trainSentCtr;
+	size_t _validSentCtr;
 	vector<int> _trainLabel;
 	vector<int> _validLabel;
 
