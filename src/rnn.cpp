@@ -200,9 +200,9 @@ bool RNN::load(const string& fn){
 		while(ifs.getline(buf, sizeof(buf)) != 0 ){
 			string tempStr(buf);
 			size_t found = tempStr.find_first_of(">");
+			size_t typeBegin = tempStr.find_first_of("<") + 1;
 			if(found !=std::string::npos ){
-				size_t typeBegin = tempStr.find_first_of("<") + 1;
-				string type = tempStr.substr(typeBegin, 7);
+				string type = tempStr.substr(typeBegin, found-typeBegin);
 				stringstream ss(tempStr.substr(found+1));
 				string rows, cols;
 				size_t rowNum, colNum;
@@ -211,7 +211,6 @@ bool RNN::load(const string& fn){
 				colNum = stoi(cols);
 				size_t totalEle = rowNum * colNum;
 				float* h_data = new float[totalEle];
-				float* h_data_bias = new float[rowNum];
 				for(size_t i = 0; i < rowNum; i++){
 					if(ifs.getline(buf, sizeof(buf)) == 0){
 						cerr << "Wrong file format!\n";
@@ -222,20 +221,43 @@ bool RNN::load(const string& fn){
 						ss1 >> h_data[ j*rowNum + i ];
 					}
 				}
-				mat weightMat(h_data,rowNum, colNum);
-				
 				Transforms* pTransform;
-				if(type == "sigmoid")
-						pTransform = new Sigmoid(weightMat);
-				else if(type == "softmax")
-						pTransform = new Softmax(weightMat);
+				
+				mat weightMat(h_data, rowNum, colNum);
+				if(type == "recursive"){
+					ifs.getline(buf, sizeof(buf));
+					tempStr.assign(buf);
+					found = tempStr.find_first_of(">");
+					stringstream ss2(tempStr.substr(found+1));
+					ss2 >> rows >> cols;
+					rowNum = stoi(rows);
+					colNum = stoi(cols);
+					totalEle = rowNum * colNum;
+					float* h_data_mem = new float[totalEle];
+					for(size_t i = 0; i < rowNum; i++){
+						if(ifs.getline(buf, sizeof(buf)) == 0){
+							cerr << "Wrong file format!\n";
+						}
+						tempStr.assign(buf);
+						stringstream ss3(tempStr);	
+						for(size_t j = 0; j < colNum; j++){
+							ss3 >> h_data_mem[ j*rowNum + i ];
+						}
+					}
+					mat memoryMat(h_data_mem, rowNum, colNum);
+					pTransform = new Recursive(weightMat, memoryMat, 5);
+					delete [] h_data_mem;
+				}
+				else if(type == "softmax"){
+					pTransform = new Softmax(weightMat);
+				}
 				else{
-					cerr << "Undefined activation function! \" " << type << " \"\n";
+					cerr << "Undefined weight format! \" " << type << " \"\n";
 					exit(1);
 				}
+					
 				_transforms.push_back(pTransform);
 				delete [] h_data;
-				delete [] h_data_bias;
 			}
 		}
 	}
