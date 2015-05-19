@@ -79,7 +79,7 @@ public:
 	host_matrix<T> operator - (T val) const;
 	
 	host_matrix<T>& operator -= (const host_matrix<T>& rhs);
-	host_matrix<T> operator - (const host_matrix<T>& rhs);
+	host_matrix<T> operator - (const host_matrix<T>& rhs)const;
 
 	host_matrix<T>& operator -= (const Transpose& rhs);
 	host_matrix<T> operator - (const Transpose& rhs) const;
@@ -246,7 +246,7 @@ host_matrix<T>& host_matrix<T>::operator -= (const host_matrix<T>& rhs){
 	return *this;
 }
 template<class T>
-host_matrix<T> host_matrix<T>::operator - (const host_matrix<T>& rhs){
+host_matrix<T> host_matrix<T>::operator - (const host_matrix<T>& rhs) const{
 	host_matrix<T> temp(*this);
 	*temp._d-=*rhs._d;
 	return temp;
@@ -323,7 +323,7 @@ host_matrix<T>& host_matrix<T>::operator &= (const host_matrix<T>& rhs){
 }
 template<class T>
 host_matrix<T> host_matrix<T>::operator & (const host_matrix<T>& rhs) const{
-	host_matrix<T> temp(*this);
+	host_matrix<T> temp;
 	*temp._d=_d->cwiseProduct(*rhs._d);
 	return temp;
 }
