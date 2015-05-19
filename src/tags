@@ -23,7 +23,7 @@ HOST_MATRIX_H	../include/host_matrix.h	2;"	d
 Init	../include/dnn.h	/^enum Init{$/;"	g
 Init	../include/rnn.h	/^enum Init{$/;"	g
 MAX_EPOCH	./dnn.cpp	14;"	d	file:
-MAX_EPOCH	./rnn.cpp	14;"	d	file:
+MAX_EPOCH	./rnn.cpp	15;"	d	file:
 MUST	../include/parser.h	/^        MUST,$/;"	e	enum:TYPE
 MUSTNUM	../include/parser.h	/^        MUSTNUM,$/;"	e	enum:TYPE
 MYNNGEN_H	../include/mynngen.h	2;"	d
@@ -120,6 +120,7 @@ _transforms	../include/dnn.h	/^	vector<Transforms*> _transforms;$/;"	m	class:DNN
 _transforms	../include/rnn.h	/^	vector<Transforms*> _transforms;$/;"	m	class:RNN
 _v	../include/mynngen.h	/^		float _v;$/;"	m	class:myNnGen
 _validLabel	../include/dataset.h	/^	vector<int> _validLabel;$/;"	m	class:Dataset
+_validSentCtr	../include/dataset.h	/^	size_t _validSentCtr;$/;"	m	class:Dataset
 _validateAccuracy	../include/dnn.h	/^	vector<float> _validateAccuracy;$/;"	m	class:DNN
 _validateAccuracy	../include/rnn.h	/^	vector<float> _validateAccuracy;$/;"	m	class:RNN
 _w	../include/transforms.h	/^		mat _w;$/;"	m	class:Transforms
@@ -134,7 +135,7 @@ backPropagate	./transforms.cpp	/^void Sigmoid::backPropagate(const mat& fin,cons
 backPropagate	./transforms.cpp	/^void Softmax::backPropagate(const mat& fin,const mat& delta,float rate, float momentum, float regularization=0.0){$/;"	f	class:Softmax
 bptt	./transforms.cpp	/^void Recursive::bptt(const mat& delta,float rate,float regularization){$/;"	f	class:Recursive
 calError	./dnn.cpp	/^void calError(mat& errout,const mat& fin,Transforms* act,const mat& delta){$/;"	f
-calError	./rnn.cpp	/^void calError(mat& errout,const mat& fin,Transforms* act,const mat& delta){$/;"	f
+calError	./rnn.cpp	/^void calError(mat& errout,const mat& fin,Transforms* act,Transforms* nex,const mat& delta){$/;"	f
 computeErrRate	./dnn.cpp	/^float computeErrRate(const vector<size_t>& ans, const vector<size_t>& output){$/;"	f
 computeErrRate	./rnn.cpp	/^float computeErrRate(const vector<size_t>& ans, const vector<size_t>& output){$/;"	f
 computeLabel	./dnn.cpp	/^void computeLabel(vector<size_t>& result,const mat& outputMat){$/;"	f
@@ -147,9 +148,9 @@ find	./parser.cpp	/^TYPE PARSER::find(string name){$/;"	f	class:PARSER
 forward	./transforms.cpp	/^void Recursive::forward(mat& out,const mat& in){$/;"	f	class:Recursive
 forward	./transforms.cpp	/^void Sigmoid::forward(mat& out,const mat& in){$/;"	f	class:Sigmoid
 forward	./transforms.cpp	/^void Softmax::forward(mat& out,const mat& in){$/;"	f	class:Softmax
-getAct	../include/transforms.h	/^	virtual ACT getAct()const {return RECURSIVE;}$/;"	f	class:Recursive
-getAct	../include/transforms.h	/^	virtual ACT getAct()const {return SIGMOID;}$/;"	f	class:Sigmoid
-getAct	../include/transforms.h	/^	virtual ACT getAct()const {return SOFTMAX;}$/;"	f	class:Softmax
+getAct	../include/transforms.h	/^	virtual ACT getAct()const {return SIGMOID;};$/;"	f	class:Sigmoid
+getAct	../include/transforms.h	/^	virtual ACT getAct()const{return RECURSIVE;};$/;"	f	class:Recursive
+getAct	../include/transforms.h	/^	virtual ACT getAct()const{return SOFTMAX;};$/;"	f	class:Softmax
 getClassLabel	../include/dataset.h	/^		int getClassLabel() {return _classLabel; }$/;"	f	class:Word
 getCols	../include/host_matrix.h	/^	size_t getCols() const {return _d->cols();}$/;"	f	class:host_matrix
 getData	../include/host_matrix.h	/^	MatrixXf* getData() const {return _d;}$/;"	f	class:host_matrix
@@ -183,6 +184,8 @@ getStep	../include/transforms.h	/^	int getStep()const {return _step;}$/;"	f	clas
 getString	./parser.cpp	/^bool PARSER::getString(string name,string& str){$/;"	f	class:PARSER
 getTrainSent	./dataset.cpp	/^Sentence Dataset::getTrainSent() {$/;"	f	class:Dataset
 getTrainSentNum	../include/dataset.h	/^	size_t getTrainSentNum() {return _trainLabel.size();}$/;"	f	class:Dataset
+getValidSent	./dataset.cpp	/^Sentence Dataset::getValidSent() {$/;"	f	class:Dataset
+getValidSentNum	../include/dataset.h	/^	size_t getValidSentNum() {return _validLabel.size();}$/;"	f	class:Dataset
 getWeight	./transforms.cpp	/^mat Transforms::getWeight()const{return _w;}$/;"	f	class:Transforms
 getWord	../include/dataset.h	/^		Word* getWord(int i) {return _sentence[i];}$/;"	f	class:Sentence
 getWordNum	../include/dataset.h	/^	size_t getWordNum() {return _wordNum;}	$/;"	f	class:Dataset
@@ -261,6 +264,7 @@ reset	../include/mynngen.h	/^		void reset(float mean, float var){$/;"	f	class:my
 resetCounter	../include/transforms.h	/^	void resetCounter(){_counter=0;_history.clear();}$/;"	f	class:Recursive
 resetSentCtr	../include/dataset.h	/^	void   resetSentCtr() {_sentCtr = 0;}$/;"	f	class:Dataset
 resetTrainSentCtr	../include/dataset.h	/^	void   resetTrainSentCtr() {_trainSentCtr = 0;}$/;"	f	class:Dataset
+resetValidSentCtr	../include/dataset.h	/^	void   resetValidSentCtr() {_validSentCtr = 0;}$/;"	f	class:Dataset
 resize	../include/host_matrix.h	/^void host_matrix<T>::resize(size_t r,size_t c){$/;"	f	class:host_matrix
 resize	../include/host_matrix.h	/^void host_matrix<T>::resize(size_t r,size_t c,T val){$/;"	f	class:host_matrix
 save	./dnn.cpp	/^void DNN::save(const string& fn){$/;"	f	class:DNN

@@ -173,6 +173,7 @@ void Recursive::backPropagate(const mat& fin,const mat& delta,float rate,float m
 
 void Recursive::write(ofstream& out){
 	out<<"<recursive> "<<_w.getRows()<<" "<<_w.getCols()<<endl;
+	out<<"step "<<_step<<endl;
 	print(out);
 	MatrixXf* hptr=_h.getData();
 	out<<"<memory> "<<_h.getRows()<<" "<<_h.getCols()<<endl;

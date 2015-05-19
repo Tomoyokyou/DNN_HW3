@@ -75,25 +75,33 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 	float minEout = Eout;
 	
 	
-	size_t oneEpoch = data.getTrainSentNum();
+	//size_t oneEpoch = data.getTrainSentNum();
+	size_t oneEpoch = 100000;
 	size_t epochCnt = 0;
 	size_t num = 0;
 	vector<mat> fin;
-	vector<size_t> validResult;
-	for(; epochCnt < maxEpoch; num++){   // increment by sentence
-
+	//vector<size_t> validResult;
+	for(; epochCnt < maxEpoch; ){   // increment by sentence
 		Sentence crtSent = data.getTrainSent();
 		fin.clear();
 		// push back first word
-		for (int wordCnt = 0; wordCnt < crtSent.getSize(); wordCnt++){
+		for (int wordCnt = 0; wordCnt < crtSent.getSize()-1; wordCnt++){
 			num++;
 			mat inputMat = crtSent.getWord(wordCnt)->getMatFeature(); // the w2v feature of new input word
 			//cout<<"inputmat:"<<inputMat.getRows()<<" "<<inputMat.getCols()<<endl;
 			feedForward(inputMat, fin);
 			//fout.push_back(tmpOutput);
-			backPropagate(_learningRate, _momentum,_reg,fin,crtSent.getWord(wordCnt)->getOneOfNOutput(2000)); 
-			if(num%1000==0)
+			backPropagate(_learningRate, _momentum,_reg,fin,crtSent.getWord(wordCnt+1)->getOneOfNOutput(2000)); 
+			if(num%10000==0)
 				cout<<"Iter: "<<num<<endl; 
+		}
+		for (int i = 0; i < _transforms.size()-1; i++){
+			ACT test;
+			test=_transforms.at(i)->getAct();
+			if(test==RECURSIVE){
+				Recursive* temp=(Recursive*)_transforms.at(i);
+				temp->resetCounter();
+			}
 		}
 		/*
 		if( num % 2000 == 0 ){
@@ -101,14 +109,32 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 			else if(_learningRate<1.0e-4){_learningRate=1.0e-4;}
 			else{_learningRate *= alpha;}
 		}
-
-		if( num % oneEpoch == 1 ){
+		*/
+		if( num % oneEpoch >= 1 ){
 			epochCnt++;
-			validResult.clear();
-			predict(validResult, validSet);
+			//validResult.clear();
+			// calculate validation entropy
+			float newEntropy = 0;
+			for ( int j = 0; j < 10000; j++){
+				Sentence validSent = data.getValidSent();
+				for (int k = 0; k < validSent.getSize()-1; k++){
+					mat validInput = validSent.getWord(k)->getMatFeature();
+					feedForward(validInput, fin);
+					int tmpAns = validSent.getWord(k+1)->getIndex();
+					if (tmpAns >= 2000)
+						tmpAns = 2000 -1;
+					MatrixXf* tmp = fin.back().getData();
+					//float err = *(fin.back().getData())[tmpAns];
+					newEntropy += (*tmp)(tmpAns,0);
+					//cout << newEntropy << endl;	
+				}
+			}
+			cout <<"Entropy:"<< newEntropy << endl;
+			data.resetValidSentCtr();
+			//predict(validResult, validSet);
 			data.resetTrainSentCtr();
-			Eout = computeErrRate(validLabel, validResult);
-
+			//Eout = computeErrRate(validLabel, validResult);
+			/*
 			pastEout = Eout;
 			if(minEout > Eout){
 				minEout = Eout;
@@ -123,14 +149,11 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 					ofs.close();
 				}
 			}
-
-			cout.precision(4);
-			cout << "Validating error: " << Eout*100 << " %,  Epoch:" << epochCnt <<"\n";
+			*/
 		}
-		*/
+		
 	}
 	cout << "Finished training for " << num << " iterations.\n";
-	cout << "bestMdl: Error at: " << minEout << endl;  
 }
 
 void RNN::predict(vector<size_t>& result, const mat& inputMat){

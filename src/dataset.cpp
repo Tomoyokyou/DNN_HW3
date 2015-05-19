@@ -20,6 +20,7 @@ Dataset::Dataset(const char* featurePath, const char* classPath, const char* snt
 	// initializing
 	_sentCtr = 0;
 	_trainSentCtr = 0;
+	_validSentCtr = 0;
 	cout << "inputting word2vec file:\n";	
 	ifstream fin(featurePath);
 	if(!fin) cout<<"Can't open word2vec file!!!\n";
@@ -157,6 +158,13 @@ Sentence Dataset::getTrainSent() {
 	_trainSentCtr++;
 	if (_trainSentCtr == _trainLabel.size())
 		_trainSentCtr = 0;
+	return tmp;
+}
+Sentence Dataset::getValidSent() {
+	Sentence tmp = _data[_validLabel[_validSentCtr]];
+	_validSentCtr++;
+	if (_validSentCtr == _validLabel.size())
+		_validSentCtr = 0;
 	return tmp;
 }
 void Dataset::dataSegment(float trainProp = 0.95){
