@@ -96,8 +96,14 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 			if(num%10000==0)
 				cout<<"Iter: "<<num<<endl; 
 		}
-		for (int i = 0; i < _transforms.size()-1; i++)
-			_transforms.at(i)->resetCounter();
+		for (int i = 0; i < _transforms.size()-1; i++){
+			ACT test;
+			test=_transforms.at(i)->getAct();
+			if(test==RECURSIVE){
+				Recursive* temp=(Recursive*)_transforms.at(i);
+				temp->resetCounter();
+			}
+		}
 		/*
 		if( num % 2000 == 0 ){
 			if(_learningRate==1.0e-4){}
