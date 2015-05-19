@@ -37,7 +37,7 @@ LIBCUMATDIR	./Makefile	/^LIBCUMATDIR=tool\/libcumatrix\/$/;"	m
 LIBRARY	./Makefile	/^LIBRARY=-lcuda -lcublas -lcudart -lcumatrix$/;"	m
 LIBS	./Makefile	/^LIBS=$(LIBCUMATDIR)lib\/libcumatrix.a$/;"	m
 MAX_EPOCH	src/dnn.cpp	14;"	d	file:
-MAX_EPOCH	src/rnn.cpp	14;"	d	file:
+MAX_EPOCH	src/rnn.cpp	15;"	d	file:
 MUST	include/parser.h	/^        MUST,$/;"	e	enum:TYPE
 MUSTNUM	include/parser.h	/^        MUSTNUM,$/;"	e	enum:TYPE
 MYNNGEN_H	include/mynngen.h	2;"	d
@@ -81,6 +81,8 @@ Softmax	src/transforms.cpp	/^Softmax::Softmax(const Softmax& s): Transforms(s){$
 Softmax	src/transforms.cpp	/^Softmax::Softmax(const mat& w):Transforms(w){$/;"	f	class:Softmax
 Softmax	src/transforms.cpp	/^Softmax::Softmax(size_t inputdim,size_t outputdim,float range): Transforms(inputdim,outputdim,range){$/;"	f	class:Softmax
 Softmax	src/transforms.cpp	/^Softmax::Softmax(size_t inputdim,size_t outputdim,myNnGen& ran): Transforms(inputdim,outputdim,ran){$/;"	f	class:Softmax
+StringProbMap	example/testViterbi.cpp	/^typedef unordered_map<string, float> StringProbMap;$/;"	t	file:
+StringProbPair	example/testViterbi.cpp	/^typedef pair<string, float> StringProbPair;$/;"	t	file:
 TRANSFORMS_H	include/transforms.h	2;"	d
 TYPE	include/parser.h	/^enum TYPE{$/;"	g
 Transforms	include/transforms.h	/^class Transforms{$/;"	c
@@ -135,6 +137,7 @@ _transforms	include/dnn.h	/^	vector<Transforms*> _transforms;$/;"	m	class:DNN
 _transforms	include/rnn.h	/^	vector<Transforms*> _transforms;$/;"	m	class:RNN
 _v	include/mynngen.h	/^		float _v;$/;"	m	class:myNnGen
 _validLabel	include/dataset.h	/^	vector<int> _validLabel;$/;"	m	class:Dataset
+_validSentCtr	include/dataset.h	/^	size_t _validSentCtr;$/;"	m	class:Dataset
 _validateAccuracy	include/dnn.h	/^	vector<float> _validateAccuracy;$/;"	m	class:DNN
 _validateAccuracy	include/rnn.h	/^	vector<float> _validateAccuracy;$/;"	m	class:RNN
 _w	include/transforms.h	/^		mat _w;$/;"	m	class:Transforms
@@ -149,7 +152,7 @@ backPropagate	src/transforms.cpp	/^void Sigmoid::backPropagate(const mat& fin,co
 backPropagate	src/transforms.cpp	/^void Softmax::backPropagate(const mat& fin,const mat& delta,float rate, float momentum, float regularization=0.0){$/;"	f	class:Softmax
 bptt	src/transforms.cpp	/^void Recursive::bptt(const mat& delta,float rate,float regularization){$/;"	f	class:Recursive
 calError	src/dnn.cpp	/^void calError(mat& errout,const mat& fin,Transforms* act,const mat& delta){$/;"	f
-calError	src/rnn.cpp	/^void calError(mat& errout,const mat& fin,Transforms* act,const mat& delta){$/;"	f
+calError	src/rnn.cpp	/^void calError(mat& errout,const mat& fin,Transforms* act,Transforms* nex,const mat& delta){$/;"	f
 computeErrRate	src/dnn.cpp	/^float computeErrRate(const vector<size_t>& ans, const vector<size_t>& output){$/;"	f
 computeErrRate	src/rnn.cpp	/^float computeErrRate(const vector<size_t>& ans, const vector<size_t>& output){$/;"	f
 computeLabel	src/dnn.cpp	/^void computeLabel(vector<size_t>& result,const mat& outputMat){$/;"	f
@@ -162,9 +165,9 @@ find	src/parser.cpp	/^TYPE PARSER::find(string name){$/;"	f	class:PARSER
 forward	src/transforms.cpp	/^void Recursive::forward(mat& out,const mat& in){$/;"	f	class:Recursive
 forward	src/transforms.cpp	/^void Sigmoid::forward(mat& out,const mat& in){$/;"	f	class:Sigmoid
 forward	src/transforms.cpp	/^void Softmax::forward(mat& out,const mat& in){$/;"	f	class:Softmax
-getAct	include/transforms.h	/^	virtual ACT getAct()const {return RECURSIVE;}$/;"	f	class:Recursive
-getAct	include/transforms.h	/^	virtual ACT getAct()const {return SIGMOID;}$/;"	f	class:Sigmoid
-getAct	include/transforms.h	/^	virtual ACT getAct()const {return SOFTMAX;}$/;"	f	class:Softmax
+getAct	include/transforms.h	/^	virtual ACT getAct()const {return SIGMOID;};$/;"	f	class:Sigmoid
+getAct	include/transforms.h	/^	virtual ACT getAct()const{return RECURSIVE;};$/;"	f	class:Recursive
+getAct	include/transforms.h	/^	virtual ACT getAct()const{return SOFTMAX;};$/;"	f	class:Softmax
 getClassLabel	include/dataset.h	/^		int getClassLabel() {return _classLabel; }$/;"	f	class:Word
 getCols	include/host_matrix.h	/^	size_t getCols() const {return _d->cols();}$/;"	f	class:host_matrix
 getData	include/host_matrix.h	/^	MatrixXf* getData() const {return _d;}$/;"	f	class:host_matrix
@@ -199,6 +202,8 @@ getStep	include/transforms.h	/^	int getStep()const {return _step;}$/;"	f	class:R
 getString	src/parser.cpp	/^bool PARSER::getString(string name,string& str){$/;"	f	class:PARSER
 getTrainSent	src/dataset.cpp	/^Sentence Dataset::getTrainSent() {$/;"	f	class:Dataset
 getTrainSentNum	include/dataset.h	/^	size_t getTrainSentNum() {return _trainLabel.size();}$/;"	f	class:Dataset
+getValidSent	src/dataset.cpp	/^Sentence Dataset::getValidSent() {$/;"	f	class:Dataset
+getValidSentNum	include/dataset.h	/^	size_t getValidSentNum() {return _validLabel.size();}$/;"	f	class:Dataset
 getWeight	src/transforms.cpp	/^mat Transforms::getWeight()const{return _w;}$/;"	f	class:Transforms
 getWord	include/dataset.h	/^		Word* getWord(int i) {return _sentence[i];}$/;"	f	class:Sentence
 getWordNum	include/dataset.h	/^	size_t getWordNum() {return _wordNum;}	$/;"	f	class:Dataset
@@ -216,6 +221,8 @@ load	src/dnn.cpp	/^bool DNN::load(const string& fn){$/;"	f	class:DNN
 load	src/rnn.cpp	/^bool RNN::load(const string& fn){$/;"	f	class:RNN
 main	example/dataTest.cpp	/^int main(){$/;"	f
 main	example/predict.cpp	/^int main(int argc,char** argv){$/;"	f
+main	example/testLoadModel.cpp	/^int main(int argc, char** argv){$/;"	f
+main	example/testViterbi.cpp	/^int main(int argc, char** argv){$/;"	f
 main	example/train.cpp	/^int main(int argc,char** argv){$/;"	f
 mapPhone	example/predict.cpp	/^void mapPhone(vector<string>& pho,const vector<seq>& res,map<size_t,string>& myMap){$/;"	f
 mat	include/dataset.h	/^typedef host_matrix<float> mat;$/;"	t
@@ -270,6 +277,7 @@ parseDim	src/util.cpp	/^void parseDim(string str,vector<size_t>& dim){$/;"	f
 parseName	example/predict.cpp	/^bool parseName(string& str,string& name,char dilimeter){$/;"	f
 parseOneOption	src/parser.cpp	/^bool PARSER::parseOneOption(string& str){$/;"	f	class:PARSER
 parseOptions	src/parser.cpp	/^void PARSER::parseOptions(string str,vector<string>& vout){$/;"	f	class:PARSER
+parseQuestion	example/testViterbi.cpp	/^void parseQuestion(string set[][5], size_t opt, const string& sentence){$/;"	f
 predict	src/dnn.cpp	/^void DNN::predict(vector<size_t>& result, const mat& inputMat){$/;"	f	class:DNN
 predict	src/rnn.cpp	/^void RNN::predict(vector<size_t>& result, const mat& inputMat){$/;"	f	class:RNN
 print	include/host_matrix.h	/^		void print(int precision=5){$/;"	f	class:host_matrix::Transpose
@@ -286,6 +294,7 @@ reset	include/mynngen.h	/^		void reset(float mean, float var){$/;"	f	class:myNnG
 resetCounter	include/transforms.h	/^	void resetCounter(){_counter=0;_history.clear();}$/;"	f	class:Recursive
 resetSentCtr	include/dataset.h	/^	void   resetSentCtr() {_sentCtr = 0;}$/;"	f	class:Dataset
 resetTrainSentCtr	include/dataset.h	/^	void   resetTrainSentCtr() {_trainSentCtr = 0;}$/;"	f	class:Dataset
+resetValidSentCtr	include/dataset.h	/^	void   resetValidSentCtr() {_validSentCtr = 0;}$/;"	f	class:Dataset
 resize	include/host_matrix.h	/^void host_matrix<T>::resize(size_t r,size_t c){$/;"	f	class:host_matrix
 resize	include/host_matrix.h	/^void host_matrix<T>::resize(size_t r,size_t c,T val){$/;"	f	class:host_matrix
 save	src/dnn.cpp	/^void DNN::save(const string& fn){$/;"	f	class:DNN

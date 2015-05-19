@@ -82,7 +82,6 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 	vector<mat> fin;
 	//vector<size_t> validResult;
 	for(; epochCnt < maxEpoch; ){   // increment by sentence
-
 		Sentence crtSent = data.getTrainSent();
 		fin.clear();
 		// push back first word
@@ -124,14 +123,13 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 					int tmpAns = validSent.getWord(k+1)->getIndex();
 					if (tmpAns >= 2000)
 						tmpAns = 2000 -1;
-					MatrixXf tmp = *fin.back().getData();
+					MatrixXf* tmp = fin.back().getData();
 					//float err = *(fin.back().getData())[tmpAns];
-					newEntropy += tmp(tmpAns,1);
-					cout << newEntropy << endl;	
+					newEntropy += (*tmp)(tmpAns,0);
+					//cout << newEntropy << endl;	
 				}
 			}
-			cout << newEntropy << endl;
-			cout << "done one iteration\n";
+			cout <<"Entropy:"<< newEntropy << endl;
 			data.resetValidSentCtr();
 			//predict(validResult, validSet);
 			data.resetTrainSentCtr();
@@ -152,14 +150,10 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 				}
 			}
 			*/
-
-			cout.precision(4);
-			cout << "Validating error: " << Eout*100 << " %,  Epoch:" << epochCnt <<"\n";
 		}
 		
 	}
 	cout << "Finished training for " << num << " iterations.\n";
-	cout << "bestMdl: Error at: " << minEout << endl;  
 }
 
 void RNN::predict(vector<size_t>& result, const mat& inputMat){

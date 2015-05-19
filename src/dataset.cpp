@@ -20,6 +20,7 @@ Dataset::Dataset(const char* featurePath, const char* classPath, const char* snt
 	// initializing
 	_sentCtr = 0;
 	_trainSentCtr = 0;
+	_validSentCtr = 0;
 	cout << "inputting word2vec file:\n";	
 	ifstream fin(featurePath);
 	if(!fin) cout<<"Can't open word2vec file!!!\n";
