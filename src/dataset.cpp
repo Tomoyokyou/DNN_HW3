@@ -35,19 +35,21 @@ Dataset::Dataset(const char* featurePath, const char* classPath, const char* snt
 	//cout << "start getting features:\n";
 	for (int i = 0; i < _wordNum; i++){
 		int cLabel = 0;
-		double tmp = 0;
+		float tmp = 0;
 		string wordName;
 		fin >> wordName;
 		string tmpStr;
 		classFin >> tmpStr >> cLabel;
-		vector<double> feature;
+		float* feature = new float[_featureDim];
 		//cout << _word[i] << endl;
 		for (int j = 0; j < _featureDim; j++){
 			//cout << j;
 			fin >> tmp;
-			feature.push_back(tmp);
+			feature[j] = tmp;
 		}
-		Word tmpWord (cLabel, i, feature);
+		mat matFeat(feature, _featureDim, 1);
+		delete[] feature;
+		Word tmpWord (cLabel, i, matFeat);
 		_wordMap[wordName] = tmpWord;
 		//cout << wordName << " " << i << " " << cLabel << endl;
 		//cout << wordName << " " << _wordMap[wordName]->getIndex() << " " << _wordMap[wordName]->getClassLabel() << endl;
@@ -129,22 +131,19 @@ mat Word::getOneOfNOutput(int wordNum) {
 	float* tmpPtr = new float[wordNum];
 	for (int i = 0; i < wordNum; i++)
 		tmpPtr[i] = 0;
-	if (_classLabel < wordNum)
+	/*if (_classLabel < wordNum)
 		tmpPtr[_classLabel] = 1;
 	else
 		tmpPtr[wordNum - 1] = 1;
+	*/
+	tmpPtr[_index % wordNum ] = 1;
 	mat temp(tmpPtr, wordNum, 1);
 	delete [] tmpPtr;
 	return temp;
 }
 
 mat Word::getMatFeature() {
-	float* tmpPtr = new float[_feature.size()];
-	for (int i = 0; i < _feature.size(); i++)
-		tmpPtr[i] = _feature[i];
-	mat temp(tmpPtr, _feature.size(), 1);
-	delete [] tmpPtr;
-	return temp;
+	return _feature;
 }
 Sentence Dataset::getSentence() {
 	Sentence tmp = _data[_sentCtr];

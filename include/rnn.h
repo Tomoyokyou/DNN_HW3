@@ -50,7 +50,7 @@ private:
 	float _reg;
 	Method _method;
 	vector<Transforms*> _transforms;
-	
+	int _classNum;
 	vector<float> _validateAccuracy;
 
 };

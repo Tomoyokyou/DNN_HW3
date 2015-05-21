@@ -16,18 +16,17 @@ typedef host_matrix<float> mat;
 class Word{
 	public:
 		Word() : _classLabel(0), _index(0) {}
-		Word(int clabel, int index, vector<double> feature):
+		Word(int clabel, int index, mat feature):
 		_classLabel(clabel), _index(index), _feature(feature) {}
 		int getClassLabel() {return _classLabel; }
 		int getIndex() {return _index; }
 		mat getOneOfNOutput(int wordNum);
 		mat getMatFeature();
-		vector<double>& getFeature() {return _feature; }
-		int getFeatureDim() {return _feature.size(); }
+		int getFeatureDim() {return _feature.getRows(); }
 	private:
 		int _classLabel;
 		int _index; // self index, from 0 ~ _wordNum
-		vector<double> _feature;
+		mat _feature;
 };
 
 class Sentence: public Word{

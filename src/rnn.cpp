@@ -23,9 +23,10 @@ void computeLabel(vector<size_t>& result,const mat& outputMat);
 void calError(mat& errout,const mat& fin,Transforms* act,Transforms* nex,const mat& delta);
 
 
-RNN::RNN():_learningRate(0.001),_momentum(0), _method(ALL){}
+RNN::RNN():_learningRate(0.001),_momentum(0), _method(ALL), _classNum(0){}
 RNN::RNN(float learningRate, float momentum,float reg, float variance,Init init, const vector<size_t>& v, Method method, int step):_learningRate(learningRate), _momentum(momentum),_reg(reg), _method(method){
 	int numOfLayers = v.size();  
+	_classNum = v.back();
 	switch(init){
 	case NORMAL:
 		gn.reset(0,variance);
@@ -76,22 +77,24 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 	
 	
 	//size_t oneEpoch = data.getTrainSentNum();
-	size_t oneEpoch = 100000;
+	size_t oneEpoch = 20000;
 	size_t epochCnt = 0;
 	size_t num = 0;
 	vector<mat> fin;
 	//vector<size_t> validResult;
 	for(; epochCnt < maxEpoch; ){   // increment by sentence
-		num++;
 		Sentence crtSent = data.getTrainSent();
 		fin.clear();
 		// push back first word
+		num++;
 		for (int wordCnt = 0; wordCnt < crtSent.getSize()-1; wordCnt++){
 			mat inputMat = crtSent.getWord(wordCnt)->getMatFeature(); // the w2v feature of new input word
 			//cout<<"inputmat:"<<inputMat.getRows()<<" "<<inputMat.getCols()<<endl;
 			feedForward(inputMat, fin);
 			//fout.push_back(tmpOutput);
-			backPropagate(_learningRate, _momentum,_reg,fin,crtSent.getWord(wordCnt+1)->getOneOfNOutput(2000)); 
+			backPropagate(_learningRate, _momentum,_reg,fin,crtSent.getWord(wordCnt+1)->getOneOfNOutput(_classNum)); 
+			//if(num%1000==0)
+			//	cout<<"Iter: "<<num<<endl; 
 		}
 		for (int i = 0; i < _transforms.size()-1; i++){
 			ACT test;
@@ -101,7 +104,7 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 				temp->resetCounter();
 			}
 		}
-		if(num%50==0){
+		if(num%5000==0){
 			cout<<"Iter:"<<num<<endl;
 		}
 		/*
@@ -111,8 +114,10 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 			else{_learningRate *= alpha;}
 		}
 		*/
-		if( num % oneEpoch == 0 ){
+		//if( num % oneEpoch == 0 ){
+		if( num % oneEpoch == 1 ){
 			epochCnt++;
+			cout << "epochNum is : "<<epochCnt<<", start validation\n";
 			//validResult.clear();
 			// calculate validation entropy
 			float newEntropy = 0;
@@ -122,15 +127,16 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 					mat validInput = validSent.getWord(k)->getMatFeature();
 					feedForward(validInput, fin);
 					int tmpAns = validSent.getWord(k+1)->getIndex();
-					if (tmpAns >= 2000)
-						tmpAns = 2000 -1;
+					if (tmpAns >= _classNum)
+						tmpAns = _classNum -1;
 					MatrixXf* tmp = fin.back().getData();
 					//float err = *(fin.back().getData())[tmpAns];
 					newEntropy -= log((*tmp)(tmpAns,0));
 					//cout << newEntropy << endl;	
 				}
 			}
-			cout <<"Entropy:"<< newEntropy << endl;
+			save("temp.mdl");
+			cout <<"avg Entropy:"<< newEntropy/10000 << endl;
 			data.resetValidSentCtr();
 			//predict(validResult, validSet);
 			data.resetTrainSentCtr();
