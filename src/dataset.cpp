@@ -136,7 +136,7 @@ mat Word::getOneOfNOutput(int wordNum) {
 	else
 		tmpPtr[wordNum - 1] = 1;
 	*/
-	tmpPtr[_index % wordNum ] = 1;
+	tmpPtr[_classLabel] = 1;
 	mat temp(tmpPtr, wordNum, 1);
 	delete [] tmpPtr;
 	return temp;
@@ -166,6 +166,13 @@ Sentence Dataset::getValidSent() {
 		_validSentCtr = 0;
 	return tmp;
 }
+Sentence Dataset::getTestSent() {
+	Sentence tmp = _testData[_testSentCtr];
+	_testSentCtr++;
+	if (_testSentCtr == _testData.size())
+		_testSentCtr = 0;
+	return tmp;
+}
 void Dataset::dataSegment(float trainProp = 0.95){
 	int trainSize = trainProp * _data.size();
 	vector<int> tmpLabel;
@@ -179,3 +186,51 @@ void Dataset::dataSegment(float trainProp = 0.95){
 	//cout << _trainLabel.size() << endl;
 	//cout << _validLabel.size() << endl;
 }
+void Dataset::parseTestData(const char* testPath){
+	cout << "inputting test file:\n";
+	ifstream sntFin(testPath);
+	if (!sntFin) cout << "Can't open test file!!!\n";
+	string tmpStr;
+	Sentence tmpSent;
+	int bla = 0;
+	while(sntFin >> tmpStr){
+		if ( _wordMap.find(tmpStr) == _wordMap.end()){
+			//cout << "word out of vocabulary!!\n";
+			bla ++;
+			Word tmpWord;
+			tmpWord.setClassLabel(-1);
+			_wordMap[tmpStr] = tmpWord;
+			//cout << tmpStr << endl;
+		}
+		
+		auto it = _wordMap.find(tmpStr);
+		//unordered_map<string, Word*> const_iterator it = _wordMap.find(tmpStr);
+		tmpSent.getSent().push_back(&it->second);
+		/*
+		cout << tmpStr << " ";
+		cout << it->first << endl;
+		cout << it->second.getIndex() << endl;
+		cout << it->second.getFeatureDim() << endl;
+		cout << it->second.getClassLabel() << endl;
+		*/
+		if (tmpStr.compare("</s>") == 0){
+			//cout << tmpSent.getSent().size() << " yo "; 
+			Sentence toBeStored(tmpSent);
+			//cout << "qq" << toBeStored.getSent().size() << "qq "; 
+			_testData.push_back(toBeStored);
+			tmpSent.getSent().clear();
+			//cout << toBeStored.getSent().size() << " " << endl;
+			// debugging
+			/*cout << "sentence size is : " << tmpSent.getSize() << endl;
+			for (int x = 0; x < tmpSent.getSize(); x++)
+				cout << tmpSent.getWord(x)->getIndex() << " ";
+			cout << endl;
+			*/
+		}
+	}
+	cout << bla << " words are out of vocabulary!\n";
+	cout << "read test sentence done!!!\n";
+	sntFin.close();
+
+}
+

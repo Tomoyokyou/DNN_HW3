@@ -22,6 +22,7 @@ class Word{
 		int getIndex() {return _index; }
 		mat getOneOfNOutput(int wordNum);
 		mat getMatFeature();
+		void setClassLabel(int i) {_classLabel = i;}
 		int getFeatureDim() {return _feature.getRows(); }
 	private:
 		int _classLabel;
@@ -54,23 +55,29 @@ class Dataset{
 	void   resetSentCtr() {_sentCtr = 0;}
 	void   resetTrainSentCtr() {_trainSentCtr = 0;}
 	void   resetValidSentCtr() {_validSentCtr = 0;}
+	void   resetTestSentCtr()  {_testSentCtr = 0;}
 	Sentence getSentence();
 	Sentence getTrainSent();
 	Sentence getValidSent();
+	Sentence getTestSent();
 	size_t getSentCtr() {return _sentCtr;}
 	size_t getTrainSentNum() {return _trainLabel.size();}
 	size_t getValidSentNum() {return _validLabel.size();}
+	size_t getTestSentNum() {return _testData.size();}
 	void dataSegment(float trainProp);
+	void parseTestData(const char* testPath);
 private:
 	size_t _featureDim;
 	size_t _wordNum;
 	size_t _sentCtr;
 	size_t _trainSentCtr;
 	size_t _validSentCtr;
+	size_t _testSentCtr;
 	vector<int> _trainLabel;
 	vector<int> _validLabel;
 
 	vector<Sentence> _data;
+	vector<Sentence> _testData;
 	unordered_map<string, Word> _wordMap;
 	
 };

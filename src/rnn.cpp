@@ -115,28 +115,37 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 		}
 		*/
 		//if( num % oneEpoch == 0 ){
-		if( num % oneEpoch == 1 ){
+		if( num % oneEpoch == 0 ){
 			epochCnt++;
 			cout << "epochNum is : "<<epochCnt<<", start validation\n";
 			//validResult.clear();
 			// calculate validation entropy
-			float newEntropy = 0;
+			float newAcc = 0;
 			for ( int j = 0; j < 10000; j++){
 				Sentence validSent = data.getValidSent();
 				for (int k = 0; k < validSent.getSize()-1; k++){
 					mat validInput = validSent.getWord(k)->getMatFeature();
 					feedForward(validInput, fin);
-					int tmpAns = validSent.getWord(k+1)->getIndex();
+					int tmpAns = validSent.getWord(k+1)->getClassLabel();
 					if (tmpAns >= _classNum)
 						tmpAns = _classNum -1;
 					MatrixXf* tmp = fin.back().getData();
-					//float err = *(fin.back().getData())[tmpAns];
-					newEntropy -= log((*tmp)(tmpAns,0));
+					//if (j == 5000)
+					//	cout << *tmp << endl;
+					MatrixXf::Index maxR, maxC;
+					float maxVal = tmp->maxCoeff(&maxR, &maxC);
+					//cout << "maximum : " << maxR <<" " <<  maxC << " " << tmpAns << endl;
+					if (maxR == tmpAns){
+						newAcc += 1.0/validSent.getSize();
+						//cout << "OAO\n";
+						//cout << newAcc << endl;
+					}
+					//newEntropy += log((*tmp)(tmpAns,0));
 					//cout << newEntropy << endl;	
 				}
 			}
 			save("temp.mdl");
-			cout <<"avg Entropy:"<< newEntropy/10000 << endl;
+			cout <<"avg Acc:"<< newAcc << endl;
 			data.resetValidSentCtr();
 			//predict(validResult, validSet);
 			data.resetTrainSentCtr();
