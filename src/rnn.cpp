@@ -76,8 +76,8 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 	float minEout = Eout;
 	
 	
-	//size_t oneEpoch = data.getTrainSentNum();
-	size_t oneEpoch = 20000;
+	size_t oneEpoch = data.getTrainSentNum();
+	//size_t oneEpoch = 20000;
 	size_t epochCnt = 0;
 	size_t num = 0;
 	vector<mat> fin;
@@ -115,7 +115,7 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 		}
 		*/
 		//if( num % oneEpoch == 0 ){
-		if( num % oneEpoch == 0 ){
+		if( num % 20000 == 0 ){
 			epochCnt++;
 			cout << "epochNum is : "<<epochCnt<<", start validation\n";
 			//validResult.clear();
