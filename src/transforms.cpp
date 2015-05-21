@@ -52,7 +52,7 @@ void Transforms::print(ofstream& out){
     for(size_t t=0;t<_w.getRows();++t){
 		//for(size_t k=0;k<_w.getCols()-1;++k)
 		for(size_t k=0;k<_w.getCols();++k)
-			out<<setw(9)<<(*h_data)(t,k);
+			out<<" "<<(*h_data)(t,k);
 		out<<endl;
 	}
 }
@@ -133,42 +133,35 @@ void Softmax::write(ofstream& out){
 /*****************************************************/
 /********************RECURSIVE************************/
 
-Recursive::Recursive(const Recursive& s): Transforms(s),_step(s._step),_counter(0),_h(s._h){	
-	_mem.resize(s._w.getRows(),1,0);
+Recursive::Recursive(const Recursive& s): Transforms(s),_step(s._step),_h(s._h){	
+	//_mem.resize(s._w.getRows(),1,0);
+	_history.push_back(mat(s._h.getRows(),1,0));
 }
 
-Recursive::Recursive(const mat& w,const mat& h,int step): Transforms(w),_step(step),_h(h),_counter(0){
-	_mem.resize(w.getRows(),1,0);
+Recursive::Recursive(const mat& w,const mat& h,int step): Transforms(w),_step(step),_h(h){
+	_history.push_back(mat(_h.getRows(),1,0));
 }
-Recursive::Recursive(size_t inputdim,size_t outputdim,float range,int step): Transforms(inputdim,outputdim,range),_step(step),_counter(0){
+Recursive::Recursive(size_t inputdim,size_t outputdim,float range,int step): Transforms(inputdim,outputdim,range),_step(step){
 	_h.resize(outputdim,outputdim);
 	rand_init(_h,range);
 	_h/=sqrt((float)outputdim);
-	_mem.resize(outputdim,1,0);
+	_history.push_back(mat(_h.getRows(),1,0));
 }
-Recursive::Recursive(size_t inputdim,size_t outputdim,myNnGen& ran,int step): Transforms(inputdim,outputdim,ran),_step(step),_counter(0){
+Recursive::Recursive(size_t inputdim,size_t outputdim,myNnGen& ran,int step): Transforms(inputdim,outputdim,ran),_step(step){
 	_h.resize(outputdim,outputdim);
 	rand_norm(_h,ran);
 	_h/=sqrt((float)outputdim);
-	_mem.resize(outputdim,1,0);
+	_history.push_back(mat(_h.getRows(),1,0));
 }
 void Recursive::forward(mat& out,const mat& in){
-	//cout<<"forward:\n";
-	//cout<<in.getRows()<<" "<<in.getCols()<<endl;
-	out=sigmoid(_w*in+_h*_mem);
-	_mem=out;
-	if(_counter<_step){
-		_history.push_back(in);
-		_counter++;
-	}
-	else{
+	if(_history.size()==_step+1)
 		_history.erase(_history.begin());
-		_history.push_back(in);
-	}
+	out=sigmoid(_w*in+_h*_history.back());
+	_history.push_back(out);
 }
 
 void Recursive::backPropagate(const mat& fin,const mat& delta,float rate,float momentum,float regularization){
-	bptt(delta,rate,regularization);
+	bptt(fin,delta,rate,regularization);
 }
 
 void Recursive::write(ofstream& out){
@@ -179,36 +172,31 @@ void Recursive::write(ofstream& out){
 	out<<fixed<<setprecision(6);
 	for(size_t t=0;t<_h.getRows();++t){
 		for(size_t k=0;k<_h.getCols();++k)
-			out<<setw(9)<<(*hptr)(t,k);
+			out<<" "<<(*hptr)(t,k);
 		out<<endl;
 	}
 }
 
-void Recursive::bptt(const mat& delta,float rate,float regularization){
-	int num=(_counter<_step)? _counter : _step;
-	vector<mat> outset(num);
+void Recursive::bptt(const mat& fin,const mat& delta,float rate,float regularization){
+	if(_graHis.size()==_step){
+		_graHis.erase(_graHis.begin());
+	}
 	//for H mat  NOTE: can be a mat only, announce a vector for debug.
-	vector<mat> deltaset(num);
-	mat graW;
-	mat graH;
-	outset[0]=sigmoid(_w*_history[0]); //init=0;
-	//feed forward  for unfold DNN
-	for(size_t t=1;t<num;++t){
-		outset[t]=sigmoid(_w*_history[t]+_h*outset[t-1]);
-	}
+	int hsize=_history.size(); //hsize-1 = idx of latest memory
+	mat graH=(delta* ~_history[hsize-2]) *rate + _h * regularization;
 	//back propagation of unfold DNN
-	mat debug=_history[num-1];
-	graW=(delta* ~_history[num-1]) *rate + _w * regularization;
-	graH=(delta* ~outset[num-1]) *rate + _h * regularization;
-	deltaset[num-1]=(outset[num-1]&((float)1.0-outset[num-1]) & (~_h * delta));
-	for(int j=num-2;j>=0;j--){
-		graW+=(deltaset[j+1]* ~ _history[j]) * rate + _w *regularization;
-		graH+=(deltaset[j+1]* ~ outset[j]) * rate + _h * regularization;
-		deltaset[j]=(outset[j]&((float)1.0-outset[j])& (~_h * deltaset[j+1]));
+	int num=_graHis.size();
+	//cout<<"num:"<<num<<" size g:"<<_graHis.size()<<" size his:"<<_history.size()<<endl;
+	for(int j=num-1;j>=0;j--){
+		graH+=(_graHis[j]* ~ _history[j]) * rate + _h * regularization;
 	}
+	_graHis.push_back(delta); //delta back
 	//update weight
-	_w-= graW/(float)num;
-	_h-= graH/(float)num;
+	_w-= (delta * ~fin)*rate + _w * regularization; 	
+	//_w-= graW/(float)num;
+	
+	_h-= graH/(float)_graHis.size();
+	
 }
 
 /**************************

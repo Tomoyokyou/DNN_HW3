@@ -82,18 +82,16 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 	vector<mat> fin;
 	//vector<size_t> validResult;
 	for(; epochCnt < maxEpoch; ){   // increment by sentence
+		num++;
 		Sentence crtSent = data.getTrainSent();
 		fin.clear();
 		// push back first word
 		for (int wordCnt = 0; wordCnt < crtSent.getSize()-1; wordCnt++){
-			num++;
 			mat inputMat = crtSent.getWord(wordCnt)->getMatFeature(); // the w2v feature of new input word
 			//cout<<"inputmat:"<<inputMat.getRows()<<" "<<inputMat.getCols()<<endl;
 			feedForward(inputMat, fin);
 			//fout.push_back(tmpOutput);
 			backPropagate(_learningRate, _momentum,_reg,fin,crtSent.getWord(wordCnt+1)->getOneOfNOutput(2000)); 
-			if(num%10000==0)
-				cout<<"Iter: "<<num<<endl; 
 		}
 		for (int i = 0; i < _transforms.size()-1; i++){
 			ACT test;
@@ -103,6 +101,9 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 				temp->resetCounter();
 			}
 		}
+		if(num%50==0){
+			cout<<"Iter:"<<num<<endl;
+		}
 		/*
 		if( num % 2000 == 0 ){
 			if(_learningRate==1.0e-4){}
@@ -110,7 +111,7 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 			else{_learningRate *= alpha;}
 		}
 		*/
-		if( num % oneEpoch >= 1 ){
+		if( num % oneEpoch == 0 ){
 			epochCnt++;
 			//validResult.clear();
 			// calculate validation entropy
@@ -271,7 +272,7 @@ void RNN::feedForward(const mat& inputMat,vector<mat>& fout){
 	fout.resize(_transforms.size()+1);//
 	fout[0]=inputMat;
 	_transforms.at(0)->forward(fout[1],fout[0]);
-	for(size_t i = 0; i < _transforms.size(); i++){
+	for(size_t i = 1; i < _transforms.size(); i++){
 		(_transforms.at(i))->forward(fout[i+1],fout[i] );
 		//tempInputMat = outputMat;
 	}

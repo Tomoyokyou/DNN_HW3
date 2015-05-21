@@ -16,8 +16,9 @@ int main(){
 	dim.push_back(200);
 	dim.push_back(100);
 	dim.push_back(2000);
-	RNN rnn(0.001,0.1,0.1,0.01,NORMAL,dim,ALL, 5);
+	RNN rnn(0.1,0.0,0.0001,0.1,NORMAL,dim,ALL, 5);
+	rnn.save("init.mdl");
 	rnn.train(d,20,0.8,0.99);
-	//rnn.save("out.mdl");
+	rnn.save("out.mdl");
 
 }
