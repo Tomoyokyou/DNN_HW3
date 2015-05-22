@@ -36,6 +36,11 @@ class Sentence: public Word{
 		vector<Word*>& getSent() {return _sentence; }
 		int getSize() {return _sentence.size(); }
 		Word* getWord(int i) {return _sentence[i];}
+		void print() {
+			for (int i = 0; i < getSize(); i++)
+				cout << _sentence[i]->getClassLabel() << " ";
+			cout << endl;
+		}
 	private:
 		vector<Word*> _sentence;
 };
