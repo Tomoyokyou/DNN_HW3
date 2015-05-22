@@ -43,7 +43,7 @@ public:
 
 private:
 	void feedForward(const mat& inputMat, vector<mat>& fout);
-	void backPropagate(float learningRate, float momentum,float regularization,const vector<mat>& fin,const mat& answer);
+	void backPropagate(float learningRate,float regularization,const vector<pair<vector<mat>,mat>>& fromForward);
 	//Dataset* _pData;
 	float _learningRate;
 	float _momentum;

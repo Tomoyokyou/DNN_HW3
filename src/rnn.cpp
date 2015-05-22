@@ -62,11 +62,6 @@ RNN::~RNN(){
 
 void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0.8, float alpha = 0.98){
 
-	//mat trainSet;
-	//mat validSet; 
-	//vector<size_t> validLabel;
-	//validData.getRecogData(100*batchSize, validSet, validLabel);  
-
 	size_t EinRise = 0;
 	float Ein = 1;
 	float pastEin = Ein;
@@ -77,25 +72,33 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 	
 	
 	size_t oneEpoch = data.getTrainSentNum();
-	//size_t oneEpoch = 20000;
 	size_t epochCnt = 0;
 	size_t num = 0;
 	vector<mat> fin;
+	vector< pair<vector<mat>,mat > > forwardSet;
+	clock_t tf=0;
+	clock_t tb=0;
+	clock_t t;
 	//vector<size_t> validResult;
 	for(; epochCnt < maxEpoch; ){   // increment by sentence
 		Sentence crtSent = data.getTrainSent();
 		fin.clear();
+		forwardSet.clear();
 		// push back first word
 		num++;
+		t=clock();
 		for (int wordCnt = 0; wordCnt < crtSent.getSize()-1; wordCnt++){
-			mat inputMat = crtSent.getWord(wordCnt)->getMatFeature(); // the w2v feature of new input word
-			//cout<<"inputmat:"<<inputMat.getRows()<<" "<<inputMat.getCols()<<endl;
-			feedForward(inputMat, fin);
-			//fout.push_back(tmpOutput);
-			backPropagate(_learningRate, _momentum,_reg,fin,crtSent.getWord(wordCnt+1)->getOneOfNOutput(_classNum)); 
-			//if(num%1000==0)
-			//	cout<<"Iter: "<<num<<endl; 
+			// check whether OOV or not
+			feedForward(crtSent.getWord(wordCnt)->getMatFeature(), fin);
+			// store all forward output 
+			forwardSet.push_back(pair<vector<mat>,mat>(fin,crtSent.getWord(wordCnt+1)->getOneOfNOutput(_classNum)));
 		}
+		tf+=clock()-t;
+		t=clock();
+		//TODO for all sequence
+		backPropagate(_learningRate,_reg,forwardSet);
+		tb+=clock()-t;
+		//reset
 		for (int i = 0; i < _transforms.size()-1; i++){
 			ACT test;
 			test=_transforms.at(i)->getAct();
@@ -106,15 +109,10 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 		}
 		if(num%5000==0){
 			cout<<"Iter:"<<num<<endl;
+			cout<<"Feedforward Time: "<<(float)tf/(float)CLOCKS_PER_SEC<<" Backpropagation Time: "<<(float)tb/(float)CLOCKS_PER_SEC<<endl;
+			cout<<"Total Time:" <<(float)(tf+tb)/(float)CLOCKS_PER_SEC<<" seconds"<<endl;
+			tb=0;tf=0;
 		}
-		/*
-		if( num % 2000 == 0 ){
-			if(_learningRate==1.0e-4){}
-			else if(_learningRate<1.0e-4){_learningRate=1.0e-4;}
-			else{_learningRate *= alpha;}
-		}
-		*/
-		//if( num % oneEpoch == 0 ){
 		if( num % 20000 == 0 ){
 			epochCnt++;
 			cout << "epochNum is : "<<epochCnt<<", start validation\n";
@@ -150,22 +148,6 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 			//predict(validResult, validSet);
 			data.resetTrainSentCtr();
 			//Eout = computeErrRate(validLabel, validResult);
-			/*
-			pastEout = Eout;
-			if(minEout > Eout){
-				minEout = Eout;
-				cout << "bestMdl: Error at: " << minEout << endl;  
-				if(minEout < 0.5){
-					ofstream ofs("best.mdl");
-					if (ofs.is_open()){
-						for(size_t i = 0; i < _transforms.size(); i++){
-							(_transforms.at(i))->write(ofs);
-						}
-					}
-					ofs.close();
-				}
-			}
-			*/
 		}
 		
 	}
@@ -289,7 +271,6 @@ void RNN::feedForward(const mat& inputMat,vector<mat>& fout){
 	_transforms.at(0)->forward(fout[1],fout[0]);
 	for(size_t i = 1; i < _transforms.size(); i++){
 		(_transforms.at(i))->forward(fout[i+1],fout[i] );
-		//tempInputMat = outputMat;
 	}
 }
 
@@ -300,8 +281,20 @@ void RNN::getHiddenForward(mat& outputMat, const mat& inputMat){
 	outputMat=fout.front();
 }
 
-//The delta of last layer = _sigoutdiff & grad(errorFunc())
-void RNN::backPropagate(float learningRate, float momentum,float regularization,const vector<mat>& fin,const mat& answer){
+void RNN::backPropagate(float learningRate,float regularization,const vector<pair<vector<mat>,mat> >& fromForward){
+	size_t fsize=fromForward.size();
+	size_t tsize=_transforms.size();
+	ACT testType;
+	vector<mat> delta(_transforms.size());
+	for(size_t t=0;t<fsize;++t){
+		delta.front()=(fromForward[fsize-1-t].first).back()-fromForward[fsize-1-t].second;
+		_transforms.back()->backPropagate(fromForward[fsize-1-t].first.at(tsize-1),delta[0],learningRate,regularization);
+		for(size_t k=1;k<tsize;++k){
+				calError(delta[k],fromForward[fsize-1-t].first.at(tsize-k),_transforms[tsize-k],_transforms[tsize-1-k],delta[k-1]);
+				_transforms[tsize-1-k]->backPropagate(fromForward[fsize-1-t].first.at(tsize-1-k),delta[k],learningRate,regularization);
+		}
+	}
+/*
 	vector<mat> err;
 	err.resize(_transforms.size());
 	err.back() = fin.back() - answer;  //cross entropy gradient
@@ -311,12 +304,7 @@ void RNN::backPropagate(float learningRate, float momentum,float regularization,
 		calError(err[size-2-i],fin.at(size-1-i),_transforms[size-1-i],_transforms[size-2-i],err.at(size-1-i));
 		_transforms[size-2-i]->backPropagate(fin.at(size-2-i),err.at(size-2-i),learningRate,momentum,regularization);
 	}
-/*
-	mat errorMat;
-	for(int i = _transforms.size()-1; i >= 0; i--){
-		(_transforms.at(i))->backPropagate(errorMat, tempMat, learningRate, momentum,regularization);
-		tempMat = errorMat;
-	}*/
+*/
 }
 
 
@@ -344,7 +332,6 @@ float computeErrRate(const vector<size_t>& ans, const vector<size_t>& output){
 }
 
 void calError(mat& errout,const mat& fin,Transforms* act,Transforms* nex,const mat& delta){
-	//modified
 	ACT type=nex->getAct();
 	mat sigdiff=fin & ((float)1.0-fin);
 	mat w(act->getWeight());

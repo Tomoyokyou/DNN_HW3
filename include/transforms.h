@@ -20,7 +20,7 @@ class Transforms{
 	public:
 		Transforms(const Transforms& t);
 		virtual void forward(mat& out,const mat& in) = 0;
-		virtual void backPropagate(const mat& fin,const mat& delta,float rate,float momentum,float regularization) = 0;
+		virtual void backPropagate(const mat& fin,const mat& delta,float rate,float regularization) = 0;
 		virtual void write(ofstream& out)=0;
 		virtual ACT getAct()const=0;
 		size_t getInputDim()const;
@@ -34,8 +34,6 @@ class Transforms{
 		Transforms(size_t inputdim, size_t outputdim,myNnGen& ran);
 		void print(ofstream& out);
 		mat _w;
-		//mat _i;
-		mat _pw;
 	private:
 };
 
@@ -48,7 +46,7 @@ class Sigmoid : public Transforms{
 	Sigmoid(size_t inputdim, size_t outputdim,float range=1.0);
 	Sigmoid(size_t inputdim, size_t outputdim,myNnGen& ran);
 	virtual void forward(mat& out,const mat& in);
-	virtual void backPropagate(const mat& fin, const mat& delta, float rate,float momentum,float regularization);
+	virtual void backPropagate(const mat& fin, const mat& delta, float rate,float regularization);
 	virtual void write(ofstream& out);
 	virtual ACT getAct()const {return SIGMOID;};
 	private:
@@ -62,7 +60,7 @@ class Softmax : public Transforms{
 	Softmax(size_t inputdim,size_t outputdim,float range=1.0);
 	Softmax(size_t inputdim,size_t outputdim,myNnGen& ran);
 	virtual void forward(mat& out,const mat& in);
-	virtual void backPropagate(const mat& fin, const mat& delta, float rate,float momentum,float regularization);
+	virtual void backPropagate(const mat& fin, const mat& delta, float rate,float regularization);
 	virtual void write(ofstream& out);
 	virtual ACT getAct()const{return SOFTMAX;};
 	private:
@@ -75,22 +73,26 @@ class Recursive : public Transforms{
 	Recursive(size_t inputdim,size_t outputdim,float range=1.0,int step=1);
 	Recursive(size_t inputdim,size_t outputdim,myNnGen& ran,int step=1);
 	virtual void forward(mat& out,const mat& in);
-	virtual void backPropagate(const mat& fin,const mat& delta,float rate,float momentum,float regularization);
+	virtual void backPropagate(const mat& fin,const mat& delta,float rate,float regularization);
 	virtual void write(ofstream& out);
 	virtual ACT getAct()const{return RECURSIVE;};
 
-	void resetCounter(){_history.clear();_graHis.clear();
-				_history.push_back(mat(_h.getRows(),1,0));}
+	void resetCounter(){_history.clear();_input.clear();
+				_history.push_back(mat(_h.getRows(),1,0));
+				_wmem.resize(_w.getRows(),_w.getCols(),0);
+				_hmem.resize(_h.getRows(),_h.getCols(),0);
+				}
 	int getStep()const {return _step;}
 	
 	private:
-		void bptt(const mat& fin,const mat& delta,float rate,float regularization);
+		void bptt(mat& gra,float rate,float regularization);
 		vector<mat> _history;
-		vector<mat> _graHis;
+		vector<mat> _input;
 		//int _counter;
 		int _step;
 		mat _h;
-		//mat _mem;
+		mat _wmem;
+		mat _hmem;
 };
 
 #endif
