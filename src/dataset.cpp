@@ -218,6 +218,7 @@ void Dataset::parseTestData(const char* testPath){
 			Sentence toBeStored(tmpSent);
 			//cout << "qq" << toBeStored.getSent().size() << "qq "; 
 			_testData.push_back(toBeStored);
+			//toBeStored.print();
 			tmpSent.getSent().clear();
 			//cout << toBeStored.getSent().size() << " " << endl;
 			// debugging
