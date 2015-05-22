@@ -1,4 +1,4 @@
-INPUT=/home/jason/training_pre4.txt
+INPUT=/home/ahpan/Data/train.txt
 COUNT_OUTPUT=./model/training.cnt
 LM_OUTPUT=./model/training.lm
 

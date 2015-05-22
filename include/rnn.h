@@ -28,7 +28,7 @@ public:
 	~RNN();
 
 	void train(Dataset& labeledData, size_t maxEpoch, float trainRation, float alpha);
-	void predict(vector<size_t>& result, const mat& inputMat);
+	void predict(Dataset& testData, const string& outName);
 	void getHiddenForward(mat& outputMat, const mat& inputMat);
 
 	//void setDataset(Dataset* pData);

@@ -4,6 +4,7 @@
 #include <sstream>
 #include <fstream>
 #include <cmath>
+#include <cfloat>
 #include <cassert>
 #include <ctime>
 #include "host_matrix.h"
@@ -172,11 +173,60 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 	cout << "Finished training for " << num << " iterations.\n";
 }
 
-void RNN::predict(vector<size_t>& result, const mat& inputMat){
-	//mat outputMat(1, 1);
-	vector<mat> fout;
-	feedForward(inputMat,fout); // modified
-	computeLabel(result, fout.back());
+void RNN::predict(Dataset& testData, const string& outName = "./model/testOutput.csv"){
+	
+	ofstream ofs(outName);
+	if(!ofs.is_open()){
+		cerr << "Fail to open file: " << outName << " !\n";
+		exit(1);
+	}
+	ofs << "Id,Answer\n";
+
+	size_t	testNum = testData.getTestSentNum();
+	cout << "Questions:" << testNum/5 << endl;
+
+	vector<mat> fin;
+	size_t i = 0;
+	while( i < testNum ){
+		double tempMin = DBL_MAX;
+		size_t minIdx = 0;
+		for(size_t j = 0; j < 5; j++ ){
+			Sentence testSent = testData.getTestSent();
+			++i; 
+			fin.clear();
+			double crossEntropy = 0.0;
+			for (int k = 0; k < testSent.getSize()-1; k++){
+				int currentAns = testSent.getWord(k)->getClassLabel();
+				if( currentAns == -1 )
+					continue;
+				mat validInput = testSent.getWord(k)->getMatFeature();
+				feedForward(validInput, fin);
+				int tmpAns = testSent.getWord(k+1)->getClassLabel();
+				MatrixXf* tmp = fin.back().getData();
+
+				//cout << tmpAns << " " ;
+				//cout << (*tmp)(tmpAns, 0) << endl; 
+				
+				// Cross Entropy method
+				if(tmpAns != -1)
+					crossEntropy -= log((double)((*tmp)(tmpAns, 0)));
+				//MatrixXf::Index maxR, maxC;
+				//float maxVal = tmp->maxCoeff(&maxR, &maxC);
+				//if (maxR == tmpAns){
+				//	newAcc += 1.0/validSent.getSize();
+				//}
+			}
+			//cout << crossEntropy <<endl;
+			if( tempMin > crossEntropy ){
+				tempMin = crossEntropy;
+				minIdx = j;
+			}
+		}
+		//cout << i/5 <<" min: " << (char)('a' + minIdx) << endl;
+		ofs << i/5 << "," << (char)('a' + minIdx) << endl;
+	}
+
+	ofs.close();
 }
 
 void RNN::setLearningRate(float learningRate){

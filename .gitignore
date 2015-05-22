@@ -37,3 +37,7 @@ model/*
 # Backup file
 *.orig
 ./**/*.orig
+
+# Tags
+tags
+./**/tags

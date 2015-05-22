@@ -31,7 +31,7 @@ int main(int argc, char** argv){
 		return 1;
 	}
 	if(!iflm.is_open()){
-		cerr << "Fail to open file: /home/larry/Documents/MLDS/DNN_HW3/model/training.lm. \n";
+		cerr << "Fail to open file: /home/ahpan/DNN_HW3/model/training.lm. \n";
 		return 1;
 	}
 	if(!ofs.is_open()){
