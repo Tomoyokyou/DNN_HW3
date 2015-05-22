@@ -73,18 +73,6 @@ void Sigmoid::forward(mat& out,const mat& in){
 void Sigmoid::backPropagate(const mat& fin,const mat& delta, float rate,float momentum,float regularization){
 	assert( (delta.getRows()==_w.getRows()) && (delta.getCols()==fin.getCols()) );
 
-	//mat sigdiff=_i & ((float)1.0-_i);
-	//mat sigdiff =  fin & ((float)1.0-fin);
-	//MatrixXf* optr=out.getData(),*dptr=delta.getData(),*sdptr=sigdiff.getData();
-
-	/*MatrixXf wbias=_w.getData()->block(0,0,_w.getRows(),_w.getCols()-1);
-	*optr = sdptr->cwiseProduct(wbias.transpose() * (*dptr));*/
-	//MatrixXf* wptr=_w.getData();
-	//*optr = sdptr->cwiseProduct(wptr->transpose() * (*dptr));
-	// update weight
-	/*mat _inp(_i);
-	pushOne(_inp);
-	_pw= delta * ~_inp + _pw * momentum;*/
 	rate/=(float)fin.getCols();
 	_pw= (delta * ~fin) * rate + _w * regularization + _pw * momentum;
 	_w -= _pw;
@@ -113,14 +101,6 @@ void Softmax::forward(mat& out,const mat& in){
 void Softmax::backPropagate(const mat& fin,const mat& delta,float rate, float momentum, float regularization=0.0){
 	assert( (delta.getRows()==_w.getRows()) && (delta.getCols()==fin.getCols()) );
 
-	//mat sigdiff=fin & ((float)1.0-fin);
-	//MatrixXf wbias=_w.getData()->block(0,0,_w.getRows(),_w.getCols()-1);
-	//MatrixXf *optr=out.getData(),*dptr=delta.getData(),*sdptr=sigdiff.getData();
-	//*optr=sdptr->cwiseProduct(wbias.transpose() * (*dptr));
-	//MatrixXf* wptr=_w.getData();
-	//*optr=sdptr->cwiseProduct(wptr->transpose() * (*dptr));
-
-	//update weight
 	rate/=(float)fin.getCols();
 	_pw= (delta* ~fin) * rate + _w * regularization + _pw * momentum;
 	_w-= _pw;
@@ -134,7 +114,6 @@ void Softmax::write(ofstream& out){
 /********************RECURSIVE************************/
 
 Recursive::Recursive(const Recursive& s): Transforms(s),_step(s._step),_h(s._h){	
-	//_mem.resize(s._w.getRows(),1,0);
 	_history.push_back(mat(s._h.getRows(),1,0));
 }
 
@@ -187,8 +166,8 @@ void Recursive::bptt(const mat& fin,const mat& delta,float rate,float regulariza
 	//back propagation of unfold DNN
 	int num=_graHis.size();
 	//cout<<"num:"<<num<<" size g:"<<_graHis.size()<<" size his:"<<_history.size()<<endl;
-	for(int j=num-1;j>=0;j--){
-		graH+=(_graHis[j]* ~ _history[j]) * rate + _h * regularization;
+	for(int j=0;j<_graHis.size();++j){
+		graH+=(_graHis[num-1-j]* ~ _history[hsize-3-j]) * rate + _h * regularization;
 	}
 	_graHis.push_back(delta); //delta back
 	//update weight

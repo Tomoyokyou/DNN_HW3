@@ -10,7 +10,11 @@ template<class T>
 host_matrix<T> sigmoid(const host_matrix<T>& src){
 	host_matrix<T> temp(src);
 	MatrixXf* tmp=temp.getData();
-	*tmp=(-1*(*src.getData())).array().exp();
+	// protection
+	*tmp=(tmp->array()>50).select(50,*tmp);
+	*tmp=(tmp->array()<-50).select(-50,*tmp);
+	// protection
+	*tmp=(tmp->array() * -1).exp();
 	MatrixXf id=MatrixXf::Ones(tmp->rows(),tmp->cols());
 	*tmp+=id;
 	*tmp=id.array() / tmp->array();
@@ -23,6 +27,10 @@ host_matrix<T> softmax(const host_matrix<T>& src){
 	MatrixXf* tmpptr=temp.getData();
 	VectorXf colMax=tmpptr->colwise().maxCoeff();
 	tmpptr->rowwise() -= colMax.transpose();
+	// protection
+	*tmpptr=(tmpptr->array()>50).select(50,*tmpptr);
+	*tmpptr=(tmpptr->array()<-50).select(-50,*tmpptr);
+	// protection
 	*tmpptr=tmpptr->array().exp();
 	VectorXf sumProb=tmpptr->colwise().sum();
 	MatrixXf sumP=MatrixXf::Zero(tmpptr->rows(),tmpptr->cols());
