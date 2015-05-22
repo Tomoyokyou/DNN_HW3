@@ -165,15 +165,12 @@ void Recursive::bptt(const mat& fin,const mat& delta,float rate,float regulariza
 	mat graH=(delta* ~_history[hsize-2]) *rate + _h * regularization;
 	//back propagation of unfold DNN
 	int num=_graHis.size();
-	//cout<<"num:"<<num<<" size g:"<<_graHis.size()<<" size his:"<<_history.size()<<endl;
 	for(int j=0;j<_graHis.size();++j){
 		graH+=(_graHis[num-1-j]* ~ _history[hsize-3-j]) * rate + _h * regularization;
 	}
 	_graHis.push_back(delta); //delta back
 	//update weight
 	_w-= (delta * ~fin)*rate + _w * regularization; 	
-	//_w-= graW/(float)num;
-	
 	_h-= graH/(float)_graHis.size();
 	
 }
