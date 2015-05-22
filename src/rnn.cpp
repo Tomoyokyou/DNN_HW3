@@ -70,7 +70,6 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 	float pastEout = Eout;
 	float minEout = Eout;
 	
-	
 	size_t oneEpoch = data.getTrainSentNum();
 	size_t epochCnt = 0;
 	size_t num = 0;
@@ -114,6 +113,7 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 			tb=0;tf=0;
 		}
 		if( num % 20000 == 0 ){
+			clock_t test=clock();
 			epochCnt++;
 			cout << "epochNum is : "<<epochCnt<<", start validation\n";
 			//validResult.clear();
@@ -144,6 +144,7 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 			}
 			save("temp.mdl");
 			cout <<"avg Acc:"<< newAcc << endl;
+			cout<<"Time: "<<(float)(clock()-test)/(float)CLOCKS_PER_SEC<<" seconds"<<endl;
 			data.resetValidSentCtr();
 			//predict(validResult, validSet);
 			data.resetTrainSentCtr();

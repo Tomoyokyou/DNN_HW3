@@ -77,10 +77,14 @@ class Recursive : public Transforms{
 	virtual void write(ofstream& out);
 	virtual ACT getAct()const{return RECURSIVE;};
 
-	void resetCounter(){_history.clear();_input.clear();
+	void resetCounter(){
+				_w-=(_counter==0)? _wmem : _wmem/(float)_counter;
+				_h-=(_counter==0)? _hmem : _hmem/(float)_counter;
+					_history.clear();_input.clear();
 				_history.push_back(mat(_h.getRows(),1,0));
 				_wmem.resize(_w.getRows(),_w.getCols(),0);
 				_hmem.resize(_h.getRows(),_h.getCols(),0);
+				_counter=0;
 				}
 	int getStep()const {return _step;}
 	
@@ -88,7 +92,7 @@ class Recursive : public Transforms{
 		void bptt(mat& gra,float rate,float regularization);
 		vector<mat> _history;
 		vector<mat> _input;
-		//int _counter;
+		int _counter;
 		int _step;
 		mat _h;
 		mat _wmem;

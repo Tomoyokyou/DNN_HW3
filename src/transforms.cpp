@@ -111,12 +111,14 @@ Recursive::Recursive(const Recursive& s): Transforms(s),_step(s._step),_h(s._h){
 	_history.push_back(mat(s._h.getRows(),1,0));
 	_wmem.resize(_w.getRows(),_w.getCols(),0);
 	_hmem.resize(_h.getRows(),_h.getCols(),0);
+	_counter=0;
 }
 
 Recursive::Recursive(const mat& w,const mat& h,int step): Transforms(w),_step(step),_h(h){
 	_history.push_back(mat(_h.getRows(),1,0));
 	_wmem.resize(_w.getRows(),_w.getCols(),0);
 	_hmem.resize(_h.getRows(),_h.getCols(),0);
+	_counter=0;
 }
 Recursive::Recursive(size_t inputdim,size_t outputdim,float range,int step): Transforms(inputdim,outputdim,range),_step(step){
 	_h.resize(outputdim,outputdim);
@@ -125,6 +127,7 @@ Recursive::Recursive(size_t inputdim,size_t outputdim,float range,int step): Tra
 	_history.push_back(mat(_h.getRows(),1,0));
 	_wmem.resize(_w.getRows(),_w.getCols(),0);
 	_hmem.resize(_h.getRows(),_h.getCols(),0);
+	_counter=0;
 }
 Recursive::Recursive(size_t inputdim,size_t outputdim,myNnGen& ran,int step): Transforms(inputdim,outputdim,ran),_step(step){
 	_h.resize(outputdim,outputdim);
@@ -133,6 +136,7 @@ Recursive::Recursive(size_t inputdim,size_t outputdim,myNnGen& ran,int step): Tr
 	_history.push_back(mat(_h.getRows(),1,0));
 	_wmem.resize(_w.getRows(),_w.getCols(),0);
 	_hmem.resize(_h.getRows(),_h.getCols(),0);
+	_counter=0;
 }
 void Recursive::forward(mat& out,const mat& in){
 	_input.push_back(in);	
