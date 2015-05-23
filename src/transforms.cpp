@@ -166,10 +166,22 @@ void Recursive::write(ofstream& out){
 
 void Recursive::bptt(mat& gra,float rate,float regularization){
 	int iidx=_input.size()-1,hidx=_history.size()-2;
+	//debug
+		//mat check,check2;
+		//MatrixXf* ckptr,*ckptr2;
 	if(iidx>=0&&hidx>=0){
 	for(int count=_step;count>0;count--){
+		/*check=(gra* ~_input[iidx])*rate + _w * regularization;
+		check2=(gra* ~_history[hidx])* rate + _h * regularization;
+		ckptr=check.getData();
+		ckptr2=check2.getData();*/
+		//if((ckptr->array()>5).any()!=0){cout<<"warning: gradient W too large(+)\n";}
+		//else if((ckptr->array()<-5).any()!=0){cout<<"warning: gradient W too large(-)\n";}
 		_wmem+=(gra* ~_input[iidx]) * rate + _w * regularization;
+		//if((ckptr2->array()>5).any()!=0){cout<<"warning: gradient H too large(+)\n";}
+		//else if((ckptr2->array()<-5).any()!=0){cout<<"warning: gradient H too large(-)\n";}
 		_hmem+=(gra* ~_history[hidx]) * rate + _h * regularization;
+		_counter++;
 		iidx--;hidx--;
 		if(iidx<0||hidx<0)
 			break;
