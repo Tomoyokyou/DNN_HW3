@@ -23,10 +23,10 @@ void computeLabel(vector<size_t>& result,const mat& outputMat);
 void calError(mat& errout,const mat& fin,Transforms* act,Transforms* nex,const mat& delta);
 
 
-RNN::RNN():_learningRate(0.001),_momentum(0), _method(ALL), _classNum(0){}
-RNN::RNN(float learningRate, float momentum,float reg, float variance,Init init, const vector<size_t>& v, Method method, int step):_learningRate(learningRate), _momentum(momentum),_reg(reg), _method(method){
+RNN::RNN():_learningRate(0.001),_momentum(0), _method(ALL){}
+RNN::RNN(float learningRate, float momentum,float reg, float variance,Init init, const vector<size_t>& v, Method method, int step, Dataset& data):_learningRate(learningRate), _momentum(momentum),_reg(reg), _method(method){
 	int numOfLayers = v.size();  
-	_classNum = v.back();
+	vector<int> ClassCount = data.getClassCount();
 	switch(init){
 	case NORMAL:
 		gn.reset(0,variance);
@@ -37,6 +37,12 @@ RNN::RNN(float learningRate, float momentum,float reg, float variance,Init init,
 			else
 				pTransform = new Softmax(v.at(i), v.at(i+1), gn);
 			_transforms.push_back(pTransform);
+		}
+		for (int i = 0; i < ClassCount.size(); i++){
+			Transforms* pTransform;
+			pTransform = new Softmax(v.at(numOfLayers-2), ClassCount[i], gn);
+			_outSoftmax.push_back(pTransform);
+			cout << v.at(numOfLayers-2) << " " << ClassCount[i] <<endl;
 		}
 		break;
 	case UNIFORM:
@@ -74,7 +80,7 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 	size_t epochCnt = 0;
 	size_t num = 0;
 	vector<mat> fin;
-	vector< pair<vector<mat>,mat > > forwardSet;
+	vector< pair<vector<mat>,vector<mat> > > forwardSet;
 	clock_t tf=0;
 	clock_t tb=0;
 	clock_t t;
@@ -86,16 +92,25 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 		// push back first word
 		num++;
 		t=clock();
+		vector<int> wordClassLabel;
+		wordClassLabel.clear();
 		for (int wordCnt = 0; wordCnt < crtSent.getSize()-1; wordCnt++){
 			// check whether OOV or not
-			feedForward(crtSent.getWord(wordCnt)->getMatFeature(), fin);
+			int tmpLabel = crtSent.getWord(wordCnt)->getClassLabel();
+			if (tmpLabel == -1) continue;
+			wordClassLabel.push_back(tmpLabel);
+			feedForward(crtSent.getWord(wordCnt)->getMatFeature(), fin, tmpLabel);
 			// store all forward output 
-			forwardSet.push_back(pair<vector<mat>,mat>(fin,crtSent.getWord(wordCnt+1)->getOneOfNOutput(_classNum)));
+			vector<mat> ans;
+			ans.push_back(crtSent.getWord(wordCnt+1)->getClassOutput(data));
+			ans.push_back(crtSent.getWord(wordCnt+1)->getWordOutput(data));
+			pair<vector<mat>, vector<mat>> tmpPair(fin, ans);
+			forwardSet.push_back(tmpPair);
 		}
 		tf+=clock()-t;
 		t=clock();
 		//TODO for all sequence
-		backPropagate(_learningRate,_reg,forwardSet);
+		backPropagate(_learningRate,_reg,forwardSet, wordClassLabel);
 		tb+=clock()-t;
 		//reset
 		for (int i = 0; i < _transforms.size()-1; i++){
@@ -115,29 +130,29 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 		if( num % 20000 == 0 ){
 			clock_t test=clock();
 			epochCnt++;
-			cout << "epochNum is : "<<epochCnt<<", start validation\n";
+			cout << "iterNum is : "<<epochCnt<<", start validation\n";
 			//validResult.clear();
 			// calculate validation entropy
 			float newAcc = 0;
 			for ( int j = 0; j < 10000; j++){
 				Sentence validSent = data.getValidSent();
 				for (int k = 0; k < validSent.getSize()-1; k++){
+					if (validSent.getWord(k)->getClassLabel() == -1) continue;
 					mat validInput = validSent.getWord(k)->getMatFeature();
-					feedForward(validInput, fin);
-					int tmpAns = validSent.getWord(k+1)->getClassLabel();
-					if (tmpAns >= _classNum)
-						tmpAns = _classNum -1;
+					int tmpLabel = validSent.getWord(k)->getClassLabel();
+					feedForward(validInput, fin, tmpLabel);
+					int tmpClassAns = validSent.getWord(k+1)->getClassLabel();
+					int tmpWordAns = validSent.getWord(k+1)->getIndex();
+					if (tmpClassAns == -1) continue;
+					// word entropy
 					MatrixXf* tmp = fin.back().getData();
-					//if (j == 5000)
-					//	cout << *tmp << endl;
 					MatrixXf::Index maxR, maxC;
 					float maxVal = tmp->maxCoeff(&maxR, &maxC);
 					//cout << "maximum : " << maxR <<" " <<  maxC << " " << tmpAns << endl;
-					if (maxR == tmpAns){
+					if (maxR == tmpWordAns){
 						newAcc += 1.0/validSent.getSize();
-						//cout << "OAO\n";
-						//cout << newAcc << endl;
 					}
+
 					//newEntropy += log((*tmp)(tmpAns,0));
 					//cout << newEntropy << endl;	
 				}
@@ -157,9 +172,9 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 
 void RNN::predict(vector<size_t>& result, const mat& inputMat){
 	//mat outputMat(1, 1);
-	vector<mat> fout;
-	feedForward(inputMat,fout); // modified
-	computeLabel(result, fout.back());
+	//vector<mat> fout;
+	//feedForward(inputMat,fout); // modified
+	//computeLabel(result, fout.back());
 }
 
 void RNN::setLearningRate(float learningRate){
@@ -265,14 +280,15 @@ bool RNN::load(const string& fn){
 	return true;
 }
 
-void RNN::feedForward(const mat& inputMat,vector<mat>& fout){
+void RNN::feedForward(const mat& inputMat,vector<mat>& fout, int classLabel){
 	//mat tempInputMat = inputMat;
-	fout.resize(_transforms.size()+1);//
+	fout.resize(_transforms.size()+2);//
 	fout[0]=inputMat;
 	_transforms.at(0)->forward(fout[1],fout[0]);
 	for(size_t i = 1; i < _transforms.size(); i++){
 		(_transforms.at(i))->forward(fout[i+1],fout[i] );
 	}
+	_outSoftmax[classLabel]->forward(fout[_transforms.size()+1], fout[_transforms.size()-1]);
 }
 
 void RNN::getHiddenForward(mat& outputMat, const mat& inputMat){
@@ -282,7 +298,7 @@ void RNN::getHiddenForward(mat& outputMat, const mat& inputMat){
 	outputMat=fout.front();
 }
 
-void RNN::backPropagate(float learningRate,float regularization,const vector<pair<vector<mat>,mat> >& fromForward){
+void RNN::backPropagate(float learningRate,float regularization,const vector<pair<vector<mat>,vector<mat>> >& fromForward, vector<int> classLabel){
 	size_t fsize=fromForward.size();
 	size_t tsize=_transforms.size();
 	ACT testType;

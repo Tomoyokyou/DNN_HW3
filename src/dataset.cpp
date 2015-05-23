@@ -39,7 +39,7 @@ Dataset::Dataset(const char* featurePath, const char* classPath, const char* snt
 		string wordName;
 		fin >> wordName;
 		string tmpStr;
-		classFin >> tmpStr >> cLabel;
+		//classFin >> tmpStr >> cLabel;
 		float* feature = new float[_featureDim];
 		//cout << _word[i] << endl;
 		for (int j = 0; j < _featureDim; j++){
@@ -49,10 +49,23 @@ Dataset::Dataset(const char* featurePath, const char* classPath, const char* snt
 		}
 		mat matFeat(feature, _featureDim, 1);
 		delete[] feature;
-		Word tmpWord (cLabel, i, matFeat);
+		Word tmpWord (-1, 0, matFeat);
 		_wordMap[wordName] = tmpWord;
 		//cout << wordName << " " << i << " " << cLabel << endl;
 		//cout << wordName << " " << _wordMap[wordName]->getIndex() << " " << _wordMap[wordName]->getClassLabel() << endl;
+	}
+	string wordName;
+	int cLabel;
+	while(classFin >> wordName >> cLabel){
+		auto it = _wordMap.find(wordName);
+		if (it == _wordMap.end())
+			cout << "ERROR::word not in the list!\n";
+		it->second.setClassLabel(cLabel);
+		//cout << it->first << " " << cLabel << endl;
+		if (_classCount.size() == cLabel)
+			_classCount.push_back(0);
+		_classCount[cLabel] ++;
+		it->second.setIndex(_classCount[cLabel]-1);
 	}
 	
 	//debugging
@@ -71,6 +84,7 @@ Dataset::Dataset(const char* featurePath, const char* classPath, const char* snt
 	// end debugging
 	fin.close();
 	classFin.close();
+	
 	cout << "inputting sentence file:\n";
 	ifstream sntFin(sntPath);
 	if (!sntFin) cout << "Can't open sentence file!!!\n";
@@ -78,8 +92,9 @@ Dataset::Dataset(const char* featurePath, const char* classPath, const char* snt
 	Sentence tmpSent;
 	int bla = 0;
 	while(sntFin >> tmpStr){
-		bla ++;
+		//bla ++;
 		if ( _wordMap.find(tmpStr) == _wordMap.end()){
+			bla++;
 			cout << "new word!!\n";
 			Word tmpWord;
 			_wordMap[tmpStr] = tmpWord;
@@ -87,7 +102,6 @@ Dataset::Dataset(const char* featurePath, const char* classPath, const char* snt
 		}
 		
 		auto it = _wordMap.find(tmpStr);
-		//unordered_map<string, Word*> const_iterator it = _wordMap.find(tmpStr);
 		tmpSent.getSent().push_back(&it->second);
 		/*
 		cout << tmpStr << " ";
@@ -127,21 +141,39 @@ Dataset::Dataset(const Dataset& d){
 	_wordMap = d._wordMap;
 };
 
-mat Word::getOneOfNOutput(int wordNum) {
-	float* tmpPtr = new float[wordNum];
-	for (int i = 0; i < wordNum; i++)
+mat Word::getClassOutput(Dataset& d) {
+	int classNum = d._classCount.size();
+	float* tmpPtr = new float[classNum];
+	for (int i = 0; i < classNum; i++)
 		tmpPtr[i] = 0;
 	/*if (_classLabel < wordNum)
 		tmpPtr[_classLabel] = 1;
 	else
 		tmpPtr[wordNum - 1] = 1;
 	*/
-	tmpPtr[_classLabel] = 1;
-	mat temp(tmpPtr, wordNum, 1);
+	if (_classLabel >= 0)
+		tmpPtr[_classLabel] = 1;
+	mat temp(tmpPtr, classNum, 1);
 	delete [] tmpPtr;
 	return temp;
 }
 
+mat Word::getWordOutput(Dataset& d) {
+	int classNum = d._classCount[_classLabel];
+	float* tmpPtr = new float[classNum];
+	for (int i = 0; i < classNum; i++)
+		tmpPtr[i] = 0;
+	/*if (_classLabel < wordNum)
+		tmpPtr[_classLabel] = 1;
+	else
+		tmpPtr[wordNum - 1] = 1;
+	*/
+	if (_index >= 0)
+		tmpPtr[_index] = 1;
+	mat temp(tmpPtr, classNum, 1);
+	delete [] tmpPtr;
+	return temp;
+}
 mat Word::getMatFeature() {
 	return _feature;
 }
