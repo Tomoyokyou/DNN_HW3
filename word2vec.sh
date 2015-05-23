@@ -1,4 +1,4 @@
-INPUT=/home/jason/training_pre4.txt
+INPUT=
 W2V=/home/larry/Documents/MLDS/trunk/word2vec
 DISTANCE=
 OUTPUT=./model/word_vector.txt
