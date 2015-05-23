@@ -112,7 +112,7 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 			cout<<"Total Time:" <<(float)(tf+tb)/(float)CLOCKS_PER_SEC<<" seconds"<<endl;
 			tb=0;tf=0;
 		}
-		if( num % 20000 == 0 ){
+		if( num % 1000 == 0 ){
 			clock_t test=clock();
 			epochCnt++;
 			cout << "epochNum is : "<<epochCnt<<", start validation\n";
