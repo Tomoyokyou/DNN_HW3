@@ -24,7 +24,7 @@ enum Init{
 class RNN{
 public:
 	RNN();
-	RNN(float learningRate,float momentum,float reg,float variance,Init init, const vector<size_t>& v, Method method, int step);
+	RNN(float learningRate,float momentum,float reg,float variance,Init init, const vector<size_t>& v, Method method, int step, Dataset& data);
 	~RNN();
 
 	void train(Dataset& labeledData, size_t maxEpoch, float trainRation, float alpha);
@@ -42,15 +42,15 @@ public:
 	bool load(const string& fn);
 
 private:
-	void feedForward(const mat& inputMat, vector<mat>& fout);
-	void backPropagate(float learningRate,float regularization,const vector<pair<vector<mat>,mat>>& fromForward);
+	void feedForward(const mat& inputMat, vector<mat>& fout, int classLabel);
+	void backPropagate(float learningRate,float regularization,const vector<pair<vector<mat>,vector<mat>>>& fromForward,const vector<int>& classLabel);
 	//Dataset* _pData;
 	float _learningRate;
 	float _momentum;
 	float _reg;
 	Method _method;
 	vector<Transforms*> _transforms;
-	int _classNum;
+	vector<Transforms*> _outSoftmax;
 	vector<float> _validateAccuracy;
 
 };

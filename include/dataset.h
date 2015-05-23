@@ -12,21 +12,23 @@
 
 using namespace std;
 typedef host_matrix<float> mat;
-
+class Dataset;
 class Word{
 	public:
-		Word() : _classLabel(0), _index(0) {}
+		Word() : _classLabel(-1), _index(0) {}
 		Word(int clabel, int index, mat feature):
 		_classLabel(clabel), _index(index), _feature(feature) {}
 		int getClassLabel() {return _classLabel; }
 		int getIndex() {return _index; }
-		mat getOneOfNOutput(int wordNum);
+		mat getClassOutput(Dataset& d);
+		mat getWordOutput(Dataset& d);
 		mat getMatFeature();
 		void setClassLabel(int i) {_classLabel = i;}
+		void setIndex(int i) {_index = i;}
 		int getFeatureDim() {return _feature.getRows(); }
 	private:
 		int _classLabel;
-		int _index; // self index, from 0 ~ _wordNum
+		int _index; // index inside label
 		mat _feature;
 };
 
@@ -46,6 +48,7 @@ class Sentence: public Word{
 };
 
 class Dataset{
+	friend class Word;
 	public:
 	Dataset();
 	
@@ -69,9 +72,10 @@ class Dataset{
 	size_t getTrainSentNum() {return _trainLabel.size();}
 	size_t getValidSentNum() {return _validLabel.size();}
 	size_t getTestSentNum() {return _testData.size();}
+	const vector<int>& getClassCount() {return _classCount;}
 	void dataSegment(float trainProp);
 	void parseTestData(const char* testPath);
-private:
+	private:
 	size_t _featureDim;
 	size_t _wordNum;
 	size_t _sentCtr;
@@ -84,7 +88,7 @@ private:
 	vector<Sentence> _data;
 	vector<Sentence> _testData;
 	unordered_map<string, Word> _wordMap;
-	
+    vector<int> _classCount;	
 };
 
 #endif 
