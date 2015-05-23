@@ -1,6 +1,6 @@
 CC=gcc
 CXX=g++
-CPPFLAGS= -O3 -std=c++11
+CPPFLAGS=  -O3 -std=c++11
 NVCC=nvcc -arch=sm_21 -w
 CUDA_DIR=/usr/local/cuda/
 EIGENDIR=/usr/local/include/eigen3/

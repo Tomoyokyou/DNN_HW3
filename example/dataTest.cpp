@@ -21,7 +21,7 @@ int main(){
 	vector<size_t>dim;
 	dim.push_back(200);
 	dim.push_back(100);
-	dim.push_back(500);
+	dim.push_back(119);
 	RNN rnn(0.02,0.0,0.00001,0.25,NORMAL,dim,ALL, 5,d);
 	rnn.train(d,20,0.8,0.99);
 	rnn.save("model/out.mdl");
