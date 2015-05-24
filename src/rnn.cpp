@@ -99,7 +99,7 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 			// check whether OOV or not
 			int nextLabel = crtSent.getWord(wordCnt+1)->getClassLabel();
 			int tmpLabel = crtSent.getWord(wordCnt)->getClassLabel();
-			if (tmpLabel == -1 || nextLabel == -1) continue;
+			if (tmpLabel == -1) continue;
 			wordClassLabel.push_back(nextLabel);
 			feedForward(crtSent.getWord(wordCnt)->getMatFeature(), fin, nextLabel);
 			// store all forward output 
@@ -111,7 +111,7 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 		}
 		tf+=clock()-t;
 		t=clock();
-		//TODO for all sequence
+		// for all sequence
 		backPropagate(_learningRate,_reg,forwardSet, wordClassLabel);
 		tb+=clock()-t;
 		//reset
@@ -140,23 +140,24 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 			for ( int j = 0; j < 10000; j++){
 				Sentence validSent = data.getValidSent();
 				for (int k = 0; k < validSent.getSize()-1; k++){
-					if (validSent.getWord(k)->getClassLabel() == -1 ||
-					    validSent.getWord(k+1)->getClassLabel() == -1) continue;
+					if (validSent.getWord(k)->getClassLabel() == -1) continue;
 					mat validInput = validSent.getWord(k)->getMatFeature();
 					int nextClassLabel = validSent.getWord(k+1)->getClassLabel();
 					feedForward(validInput, fin, nextClassLabel);
 					int nextWordAns = validSent.getWord(k+1)->getIndex();
 					// word entropy
-					MatrixXf* tmp = fin.back().getData();
 					MatrixXf::Index w_maxR, w_maxC, c_maxR, c_maxC;
-					float maxVal = tmp->maxCoeff(&w_maxR, &w_maxC);
+					if (nextClassLabel != -1){
+						MatrixXf* tmp = fin.back().getData();
+						float maxVal = tmp->maxCoeff(&w_maxR, &w_maxC);
+					}
 					//cout << "maximum : " << maxR <<" " <<  maxC << " " << tmpAns << endl;
 					MatrixXf* ClassTmp = fin[fin.size()-2].getData();
-					maxVal = ClassTmp->maxCoeff(&c_maxR, &c_maxC);
+					float maxVal = ClassTmp->maxCoeff(&c_maxR, &c_maxC);
 					if ( c_maxR == nextClassLabel ){
 						newClassAcc += 1.0/validSent.getSize();
 					}
-					if (w_maxR == nextWordAns && c_maxR == nextClassLabel ){
+					if ( w_maxR == nextWordAns && c_maxR == nextClassLabel ){
 						newWordAcc += 1.0/validSent.getSize();
 					}
 
@@ -214,7 +215,7 @@ void RNN::predict(Dataset& testData, const string& outName = "./model/testOutput
 				int currentClass = testSent.getWord(k)->getClassLabel();
 				int nextClass = testSent.getWord(k+1)->getClassLabel();
 				
-				if( currentClass == -1 || nextClass == -1)
+				if( currentClass == -1 )
 					continue;
 				mat testInput = testSent.getWord(k)->getMatFeature();
 				feedForward(testInput, fin, nextClass);
@@ -225,10 +226,11 @@ void RNN::predict(Dataset& testData, const string& outName = "./model/testOutput
 				//cout << (*tmp)(tmpAns, 0) << endl; 
 				int nextIndex = testSent.getWord(k+1)->getIndex();
 				// Cross Entropy method
-				if(nextIndex != -1)
+				if(nextClass != -1 && nextIndex != -1)
 					crossEntropy -= log((double)((*wordtmp)(nextIndex, 0)));
-				if(nextClass != -1)
-					crossEntropy -= log((double)((*classtmp)(nextClass, 0)));
+				if(nextClass == -1)
+					nextClass == testData.getClassCount().size()-1;
+				crossEntropy -= log((double)((*classtmp)(nextClass, 0)));
 				//MatrixXf::Index maxR, maxC;
 				//float maxVal = tmp->maxCoeff(&maxR, &maxC);
 				//if (maxR == tmpAns){
@@ -368,7 +370,8 @@ void RNN::feedForward(const mat& inputMat,vector<mat>& fout, int classLabel){
 	for(size_t i = 1; i < _transforms.size(); i++){
 		(_transforms.at(i))->forward(fout[i+1],fout[i] );
 	}
-	_outSoftmax[classLabel]->forward(fout[_transforms.size()+1], fout[_transforms.size()-1]);
+	if (classLabel >= 0)
+		_outSoftmax[classLabel]->forward(fout[_transforms.size()+1], fout[_transforms.size()-1]);
 }
 
 void RNN::getHiddenForward(mat& outputMat, const mat& inputMat){

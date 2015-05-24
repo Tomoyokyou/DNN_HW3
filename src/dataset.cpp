@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cstdlib> // rand()
 #include <ctime>
+#include <cassert>
 using namespace std;
 typedef host_matrix<float> mat;
 
@@ -67,7 +68,7 @@ Dataset::Dataset(const char* featurePath, const char* classPath, const char* snt
 		_classCount[cLabel] ++;
 		it->second.setIndex(_classCount[cLabel]-1);
 	}
-	
+	_classCount.push_back(0); // training OOV class	
 	//debugging
 	/*
 	cout <<_wordMap.size()<<"yo"<<endl;
@@ -153,21 +154,19 @@ mat Word::getClassOutput(Dataset& d) {
 	*/
 	if (_classLabel >= 0)
 		tmpPtr[_classLabel] = 1;
+	else 
+		tmpPtr[classNum-1] = 1; // training OOV
 	mat temp(tmpPtr, classNum, 1);
 	delete [] tmpPtr;
 	return temp;
 }
 
 mat Word::getWordOutput(Dataset& d) {
+	assert(_classLabel >= 0);
 	int classNum = d._classCount[_classLabel];
 	float* tmpPtr = new float[classNum];
 	for (int i = 0; i < classNum; i++)
 		tmpPtr[i] = 0;
-	/*if (_classLabel < wordNum)
-		tmpPtr[_classLabel] = 1;
-	else
-		tmpPtr[wordNum - 1] = 1;
-	*/
 	if (_index >= 0)
 		tmpPtr[_index] = 1;
 	mat temp(tmpPtr, classNum, 1);
