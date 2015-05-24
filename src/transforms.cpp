@@ -16,23 +16,26 @@ typedef host_matrix<float> mat;
 
 /********************TRANSFORM**********************/
 
-Transforms::Transforms(const Transforms& t):_w(t._w){}
+Transforms::Transforms(const Transforms& t):_w(t._w){_counter=0;}
 
 //Transforms::Transforms(const mat& w,const mat& b){ RNN
 Transforms::Transforms(const mat& w){
 	_w=w;
+	_counter=0;
 }
 
 Transforms::Transforms(size_t inputdim,size_t outputdim,float range){
 	_w.resize(outputdim,inputdim);
 	rand_init(_w,range); // uniform distribution
 	_w/=sqrt((float)inputdim);
+	_counter=0;
 }
 
 Transforms::Transforms(size_t inputdim,size_t outputdim,myNnGen& ran){
 	_w.resize(outputdim,inputdim);
 	rand_norm(_w,ran);  // default variance = 0.1 , to change varance head to include/util.h
 	_w/=sqrt((float)inputdim);
+	_counter=0;
 }
 size_t Transforms::getInputDim()const{
 	return _w.getCols();
@@ -81,20 +84,16 @@ void Sigmoid::write(ofstream& out){
 /*****************************************************/
 /***********************SOFTMAX***********************/
 Softmax::Softmax(const Softmax& s): Transforms(s){
-	_counter=0;
 	_graMem.resize(_w.getRows(),_w.getCols(),0);	
 }
 //Softmax::Softmax(const mat& w, const mat& bias):Transforms(w,bias){
 Softmax::Softmax(const mat& w):Transforms(w){
-	_counter=0;
 	_graMem.resize(_w.getRows(),_w.getCols(),0);	
 }
 Softmax::Softmax(size_t inputdim,size_t outputdim,float range): Transforms(inputdim,outputdim,range){
-	_counter=0;
 	_graMem.resize(_w.getRows(),_w.getCols(),0);	
 }
 Softmax::Softmax(size_t inputdim,size_t outputdim,myNnGen& ran): Transforms(inputdim,outputdim,ran){
-	_counter=0;
 	_graMem.resize(_w.getRows(),_w.getCols(),0);	
 }
 void Softmax::forward(mat& out,const mat& in){
@@ -115,6 +114,7 @@ void Softmax::write(ofstream& out){
 void Softmax::accGra(const mat& fin,const mat& delta,float rate,float regularization=0.0){
 	assert( (delta.getRows()==_w.getRows()) && (delta.getCols()==fin.getCols()) );
 	_graMem+=(delta * ~fin) * rate + _w * regularization;
+	_counter++;
 }
 
 /*****************************************************/
@@ -124,14 +124,12 @@ Recursive::Recursive(const Recursive& s): Transforms(s),_step(s._step),_h(s._h){
 	_history.push_back(mat(s._h.getRows(),1,0));
 	_wmem.resize(_w.getRows(),_w.getCols(),0);
 	_hmem.resize(_h.getRows(),_h.getCols(),0);
-	_counter=0;
 }
 
 Recursive::Recursive(const mat& w,const mat& h,int step): Transforms(w),_step(step),_h(h){
 	_history.push_back(mat(_h.getRows(),1,0));
 	_wmem.resize(_w.getRows(),_w.getCols(),0);
 	_hmem.resize(_h.getRows(),_h.getCols(),0);
-	_counter=0;
 }
 Recursive::Recursive(size_t inputdim,size_t outputdim,float range,int step): Transforms(inputdim,outputdim,range),_step(step){
 	_h.resize(outputdim,outputdim);
@@ -140,7 +138,6 @@ Recursive::Recursive(size_t inputdim,size_t outputdim,float range,int step): Tra
 	_history.push_back(mat(_h.getRows(),1,0));
 	_wmem.resize(_w.getRows(),_w.getCols(),0);
 	_hmem.resize(_h.getRows(),_h.getCols(),0);
-	_counter=0;
 }
 Recursive::Recursive(size_t inputdim,size_t outputdim,myNnGen& ran,int step): Transforms(inputdim,outputdim,ran),_step(step){
 	_h.resize(outputdim,outputdim);
@@ -149,7 +146,6 @@ Recursive::Recursive(size_t inputdim,size_t outputdim,myNnGen& ran,int step): Tr
 	_history.push_back(mat(_h.getRows(),1,0));
 	_wmem.resize(_w.getRows(),_w.getCols(),0);
 	_hmem.resize(_h.getRows(),_h.getCols(),0);
-	_counter=0;
 }
 void Recursive::forward(mat& out,const mat& in){
 	_input.push_back(in);	

@@ -28,6 +28,7 @@ class Transforms{
 		size_t getOutputDim()const;
 		mat getWeight()const;
 		mat getGradient()const;
+		bool isreset()const{return _counter==0;}
 	protected:
 		//Transforms(const mat& w,const mat& b); RNN
 		Transforms(const mat& w);
@@ -35,6 +36,7 @@ class Transforms{
 		Transforms(size_t inputdim, size_t outputdim,myNnGen& ran);
 		void print(ofstream& out);
 		mat _w;
+		int _counter;
 	private:
 };
 
@@ -72,7 +74,7 @@ class Softmax : public Transforms{
 			}
 	void accGra(const mat& fin,const mat& delta,float rate,float regularization);
 	private:
-	int _counter;
+	//int _counter;
 	mat _graMem;
 };
 
@@ -108,7 +110,7 @@ class Recursive : public Transforms{
 		void bptt(mat& gra,float rate,float regularization);
 		vector<mat> _history;
 		vector<mat> _input;
-		int _counter;
+		//int _counter;
 		int _step;
 		mat _h;
 		mat _wmem;
