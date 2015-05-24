@@ -42,7 +42,7 @@ RNN::RNN(float learningRate, float momentum,float reg, float variance,Init init,
 			Transforms* pTransform;
 			pTransform = new Softmax(v.at(numOfLayers-2), ClassCount[i], gn);
 			_outSoftmax.push_back(pTransform);
-			cout << v.at(numOfLayers-2) << " " << ClassCount[i] <<endl;
+		//	cout << v.at(numOfLayers-2) << " " << ClassCount[i] <<endl;
 		}
 		break;
 	case UNIFORM:
@@ -140,7 +140,7 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 				Sentence validSent = data.getValidSent();
 				for (int k = 0; k < validSent.getSize()-1; k++){
 					if (validSent.getWord(k)->getClassLabel() == -1 ||
-					    validSent.getWord(k+1)->getClassLabel()) continue;
+					    validSent.getWord(k+1)->getClassLabel() == -1) continue;
 					mat validInput = validSent.getWord(k)->getMatFeature();
 					int tmpLabel = validSent.getWord(k+1)->getClassLabel();
 					feedForward(validInput, fin, tmpLabel);
@@ -149,19 +149,30 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 					if (tmpClassAns == -1) continue;
 					// word entropy
 					MatrixXf* tmp = fin.back().getData();
-					MatrixXf::Index maxR, maxC;
-					float maxVal = tmp->maxCoeff(&maxR, &maxC);
+					MatrixXf::Index w_maxR, w_maxC, c_maxR, c_maxC;
+					float maxVal = tmp->maxCoeff(&w_maxR, &w_maxC);
 					//cout << "maximum : " << maxR <<" " <<  maxC << " " << tmpAns << endl;
-					if (maxR == tmpWordAns){
+					MatrixXf* ClassTmp = fin.back().getData();
+					maxVal = ClassTmp->maxCoeff(&c_maxR, &c_maxC);
+					if (w_maxR == tmpWordAns && c_maxR == tmpClassAns ){
 						newAcc += 1.0/validSent.getSize();
 					}
 
 					//newEntropy += log((*tmp)(tmpAns,0));
 					//cout << newEntropy << endl;	
 				}
+				// reset counter
+				for (int i = 0; i < _transforms.size()-1; i++){
+					ACT test;
+					test=_transforms.at(i)->getAct();
+					if(test==RECURSIVE){
+						Recursive* temp=(Recursive*)_transforms.at(i);
+						temp->resetCounter();
+					}
+				}
 			}
 			//save("temp.mdl");
-			cout <<"avg Acc:"<< newAcc << endl;
+			cout <<"avg Acc:"<< newAcc/10000 << endl;
 			cout<<"Time: "<<(float)(clock()-test)/(float)CLOCKS_PER_SEC<<" seconds"<<endl;
 			data.resetValidSentCtr();
 			//predict(validResult, validSet);
