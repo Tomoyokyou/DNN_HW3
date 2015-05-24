@@ -11,7 +11,7 @@
 #include "util.h"
 #include "dataset.h"
 #include "transforms.h"
-
+#include <cfloat>
 #define MAX_EPOCH 1000
 
 using namespace std;
@@ -135,27 +135,29 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 			cout << "iterNum is : "<<epochCnt<<", start validation\n";
 			//validResult.clear();
 			// calculate validation entropy
-			float newAcc = 0;
+			float newWordAcc = 0;
+			float newClassAcc = 0;
 			for ( int j = 0; j < 10000; j++){
 				Sentence validSent = data.getValidSent();
 				for (int k = 0; k < validSent.getSize()-1; k++){
 					if (validSent.getWord(k)->getClassLabel() == -1 ||
 					    validSent.getWord(k+1)->getClassLabel() == -1) continue;
 					mat validInput = validSent.getWord(k)->getMatFeature();
-					int tmpLabel = validSent.getWord(k+1)->getClassLabel();
-					feedForward(validInput, fin, tmpLabel);
-					int tmpClassAns = validSent.getWord(k+1)->getClassLabel();
-					int tmpWordAns = validSent.getWord(k+1)->getIndex();
-					if (tmpClassAns == -1) continue;
+					int nextClassLabel = validSent.getWord(k+1)->getClassLabel();
+					feedForward(validInput, fin, nextClassLabel);
+					int nextWordAns = validSent.getWord(k+1)->getIndex();
 					// word entropy
 					MatrixXf* tmp = fin.back().getData();
 					MatrixXf::Index w_maxR, w_maxC, c_maxR, c_maxC;
 					float maxVal = tmp->maxCoeff(&w_maxR, &w_maxC);
 					//cout << "maximum : " << maxR <<" " <<  maxC << " " << tmpAns << endl;
-					MatrixXf* ClassTmp = fin.back().getData();
+					MatrixXf* ClassTmp = fin[fin.size()-2].getData();
 					maxVal = ClassTmp->maxCoeff(&c_maxR, &c_maxC);
-					if (w_maxR == tmpWordAns && c_maxR == tmpClassAns ){
-						newAcc += 1.0/validSent.getSize();
+					if ( c_maxR == nextClassLabel ){
+						newClassAcc += 1.0/validSent.getSize();
+					}
+					if (w_maxR == nextWordAns && c_maxR == nextClassLabel ){
+						newWordAcc += 1.0/validSent.getSize();
 					}
 
 					//newEntropy += log((*tmp)(tmpAns,0));
@@ -172,7 +174,8 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 				}
 			}
 			//save("temp.mdl");
-			cout <<"avg Acc:"<< newAcc/10000 << endl;
+			cout <<"avg class Acc:"<< newClassAcc/10000 << endl;
+			cout <<"avg word Acc:"<< newWordAcc/10000 << endl;
 			cout<<"Time: "<<(float)(clock()-test)/(float)CLOCKS_PER_SEC<<" seconds"<<endl;
 			data.resetValidSentCtr();
 			//predict(validResult, validSet);
@@ -184,11 +187,74 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 	cout << "Finished training for " << num << " iterations.\n";
 }
 
-void RNN::predict(vector<size_t>& result, const mat& inputMat){
-	//mat outputMat(1, 1);
-	//vector<mat> fout;
-	//feedForward(inputMat,fout); // modified
-	//computeLabel(result, fout.back());
+
+void RNN::predict(Dataset& testData, const string& outName = "./model/testOutput.csv"){
+	
+	ofstream ofs(outName);
+	if(!ofs.is_open()){
+		cerr << "Fail to open file: " << outName << " !\n";
+		exit(1);
+	}
+	ofs << "Id,Answer\n";
+
+	size_t	testNum = testData.getTestSentNum();
+	cout << "Questions:" << testNum/5 << endl;
+
+	vector<mat> fin;
+	size_t i = 0;
+	while( i < testNum ){
+		double tempMin = DBL_MAX;
+		size_t minIdx = 0;
+		for(size_t j = 0; j < 5; j++ ){
+			Sentence testSent = testData.getTestSent();
+			++i; 
+			fin.clear();
+			double crossEntropy = 0.0;
+			for (int k = 0; k < testSent.getSize()-1; k++){
+				int currentClass = testSent.getWord(k)->getClassLabel();
+				int nextClass = testSent.getWord(k+1)->getClassLabel();
+				
+				if( currentClass == -1 || nextClass == -1)
+					continue;
+				mat testInput = testSent.getWord(k)->getMatFeature();
+				feedForward(testInput, fin, nextClass);
+				MatrixXf* wordtmp = fin.back().getData();
+				MatrixXf* classtmp = fin[fin.size()-2].getData();
+
+				//cout << tmpAns << " " ;
+				//cout << (*tmp)(tmpAns, 0) << endl; 
+				int nextIndex = testSent.getWord(k+1)->getIndex();
+				// Cross Entropy method
+				if(nextIndex != -1)
+					crossEntropy -= log((double)((*wordtmp)(nextIndex, 0)));
+				if(nextClass != -1)
+					crossEntropy -= log((double)((*classtmp)(nextClass, 0)));
+				//MatrixXf::Index maxR, maxC;
+				//float maxVal = tmp->maxCoeff(&maxR, &maxC);
+				//if (maxR == tmpAns){
+				//	newAcc += 1.0/validSent.getSize();
+				//}
+			}
+			//cout << crossEntropy <<endl;
+			if( tempMin > crossEntropy ){
+				tempMin = crossEntropy;
+				minIdx = j;
+			}
+			//reset counter
+			for (int i = 0; i < _transforms.size()-1; i++){
+				ACT test;
+				test=_transforms.at(i)->getAct();
+				if(test==RECURSIVE){
+					Recursive* temp=(Recursive*)_transforms.at(i);
+					temp->resetCounter();
+				}
+			}
+		}
+		//cout << i/5 <<" min: " << (char)('a' + minIdx) << endl;
+		ofs << i/5 << "," << (char)('a' + minIdx) << endl;
+	}
+	testData.resetTestSentCtr();
+	ofs.close();
 }
 
 void RNN::setLearningRate(float learningRate){
