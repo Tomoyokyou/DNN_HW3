@@ -123,10 +123,14 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 				temp->resetCounter();
 			}*/
 		}
+		for(int i=0;i<wordClassLabel.size();++i){
+			if(!_outSoftmax[wordClassLabel[i]]->isreset()) _outSoftmax[wordClassLabel[i]]->resetCounter();
+		}
 		if(num%5000==0){
 			cout<<"Iter:"<<num<<endl;
+			if(num==5000){
 			cout<<"Feedforward Time: "<<(float)tf/(float)CLOCKS_PER_SEC<<" Backpropagation Time: "<<(float)tb/(float)CLOCKS_PER_SEC<<endl;
-			cout<<"Total Time:" <<(float)(tf+tb)/(float)CLOCKS_PER_SEC<<" seconds"<<endl;
+			cout<<"Total Time:" <<(float)(tf+tb)/(float)CLOCKS_PER_SEC<<" seconds"<<endl;}
 			tb=0;tf=0;
 		}
 		if( num % 20000 == 0 ){
@@ -385,7 +389,8 @@ void RNN::backPropagate(float learningRate,float regularization,const vector<pai
 	size_t fsize=fromForward.size();
 	size_t tsize=_transforms.size();
 	ACT testType;
-	vector<mat> delta(_transforms.size());
+	//vector<mat> delta(_transforms.size());
+	mat delta;
 	mat delta1,delta2;
 	mat classdiff;
 	mat softSum(_transforms.back()->getOutputDim(),1,0);
@@ -397,28 +402,17 @@ void RNN::backPropagate(float learningRate,float regularization,const vector<pai
 		//this should update after all been calculated
 		((Softmax*)_transforms.back())->accGra(fromForward[fsize-1-t].first.at(tsize-1),delta1,learningRate,regularization);
 		    //_transforms.back()->backPropagate(fromForward[fsize-1-t].first.at(tsize-1),delta1,learningRate,regularization);
-		//this can update every time
-		_outSoftmax[classLabel[fsize-1-t]]->backPropagate(fromForward[fsize-1-t].first.at(tsize-1),delta2,learningRate,regularization);
+		((Softmax*)_outSoftmax[classLabel[fsize-1-t]])->accGra(fromForward[fsize-1-t].first.at(tsize-1),delta2,learningRate,regularization);
 		delta1=classdiff & (~(_transforms.back()->getWeight())*delta1);
 		delta2=classdiff & (~(_outSoftmax[classLabel[fsize-1-t]]->getWeight())*delta2);
-		delta.front()=delta1+delta2;
+		delta=delta1+delta2;
 		//_transforms.back()->backPropagate(fromForward[fsize-1-t].first.at(tsize-1),delta[0],learningRate,regularization);
-		for(size_t k=1;k<tsize;++k){
+		_transforms[0]->backPropagate(fromForward[fsize-1-t].first.at(0),delta,learningRate,regularization);
+		/*for(size_t k=1;k<tsize;++k){
 				//calError(delta[k],fromForward[fsize-1-t].first.at(tsize-k),_transforms[tsize-k],_transforms[tsize-1-k],delta[k-1]);
 				_transforms[tsize-1-k]->backPropagate(fromForward[fsize-1-t].first.at(tsize-1-k),delta[0],learningRate,regularization);
-		}
+		}*/
 	}
-/*
-	vector<mat> err;
-	err.resize(_transforms.size());
-	err.back() = fin.back() - answer;  //cross entropy gradient
-	size_t size=_transforms.size();
-	_transforms.back()->backPropagate(fin.at(size-1),err[size-1],learningRate,momentum,regularization); //for softmax
-	for(int i=0;i<_transforms.size()-1;i++){
-		calError(err[size-2-i],fin.at(size-1-i),_transforms[size-1-i],_transforms[size-2-i],err.at(size-1-i));
-		_transforms[size-2-i]->backPropagate(fin.at(size-2-i),err.at(size-2-i),learningRate,momentum,regularization);
-	}
-*/
 }
 
 
