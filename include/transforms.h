@@ -23,6 +23,7 @@ class Transforms{
 		virtual void backPropagate(const mat& fin,const mat& delta,float rate,float regularization) = 0;
 		virtual void write(ofstream& out)=0;
 		virtual ACT getAct()const=0;
+		virtual void resetCounter()=0;
 		size_t getInputDim()const;
 		size_t getOutputDim()const;
 		mat getWeight()const;
@@ -48,6 +49,7 @@ class Sigmoid : public Transforms{
 	virtual void forward(mat& out,const mat& in);
 	virtual void backPropagate(const mat& fin, const mat& delta, float rate,float regularization);
 	virtual void write(ofstream& out);
+	virtual void resetCounter(){};
 	virtual ACT getAct()const {return SIGMOID;};
 	private:
 };
@@ -63,7 +65,15 @@ class Softmax : public Transforms{
 	virtual void backPropagate(const mat& fin, const mat& delta, float rate,float regularization);
 	virtual void write(ofstream& out);
 	virtual ACT getAct()const{return SOFTMAX;};
+	virtual void resetCounter(){
+			_w-=(_counter==0)? _graMem : _graMem /(float)_counter;
+			_graMem.resize(_w.getRows(),_w.getCols(),0);	
+			_counter=0;	
+			}
+	void accGra(const mat& fin,const mat& delta,float rate,float regularization);
 	private:
+	int _counter;
+	mat _graMem;
 };
 
 class Recursive : public Transforms{
@@ -78,6 +88,12 @@ class Recursive : public Transforms{
 	virtual ACT getAct()const{return RECURSIVE;};
 
 	void resetCounter(){
+				/*cout<<"w\n";
+				_wmem.print();
+				cout<<"\nh\n";
+				_hmem.print();
+				cerr<<"stop\n";
+				int x;cin>>x;*/
 				_w-=(_counter==0)? _wmem : _wmem/(float)_counter;
 				_h-=(_counter==0)? _hmem : _hmem/(float)_counter;
 					_history.clear();_input.clear();

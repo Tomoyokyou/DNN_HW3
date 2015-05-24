@@ -81,13 +81,21 @@ void Sigmoid::write(ofstream& out){
 /*****************************************************/
 /***********************SOFTMAX***********************/
 Softmax::Softmax(const Softmax& s): Transforms(s){
+	_counter=0;
+	_graMem.resize(_w.getRows(),_w.getCols(),0);	
 }
 //Softmax::Softmax(const mat& w, const mat& bias):Transforms(w,bias){
 Softmax::Softmax(const mat& w):Transforms(w){
+	_counter=0;
+	_graMem.resize(_w.getRows(),_w.getCols(),0);	
 }
 Softmax::Softmax(size_t inputdim,size_t outputdim,float range): Transforms(inputdim,outputdim,range){
+	_counter=0;
+	_graMem.resize(_w.getRows(),_w.getCols(),0);	
 }
 Softmax::Softmax(size_t inputdim,size_t outputdim,myNnGen& ran): Transforms(inputdim,outputdim,ran){
+	_counter=0;
+	_graMem.resize(_w.getRows(),_w.getCols(),0);	
 }
 void Softmax::forward(mat& out,const mat& in){
 	out=softmax(_w * in);
@@ -95,13 +103,18 @@ void Softmax::forward(mat& out,const mat& in){
 
 void Softmax::backPropagate(const mat& fin,const mat& delta,float rate, float regularization=0.0){
 	assert( (delta.getRows()==_w.getRows()) && (delta.getCols()==fin.getCols()) );
-
-	rate/=(float)fin.getCols();
+	//_graMem+=(delta* ~fin) * rate + _w *regularization;
+	//rate/=(float)fin.getCols();
 	_w-= (delta* ~fin) * rate + _w * regularization;
 }
 void Softmax::write(ofstream& out){
 	out<<"<softmax> "<<_w.getRows()<<" "<<_w.getCols()<<endl;
 	print(out);
+}
+
+void Softmax::accGra(const mat& fin,const mat& delta,float rate,float regularization=0.0){
+	assert( (delta.getRows()==_w.getRows()) && (delta.getCols()==fin.getCols()) );
+	_graMem+=(delta * ~fin) * rate + _w * regularization;
 }
 
 /*****************************************************/
@@ -167,10 +180,13 @@ void Recursive::write(ofstream& out){
 void Recursive::bptt(mat& gra,float rate,float regularization){
 	int iidx=_input.size()-1,hidx=_history.size()-2;
 	//debug
+		//MatrixXf* gptr;
 		//mat check,check2;
 		//MatrixXf* ckptr,*ckptr2;
 	if(iidx>=0&&hidx>=0){
-	for(int count=_step;count>0;count--){
+	for(int count=0;count<_step;count++){
+		//gptr=gra.getData();
+		//if(gptr->array().maxCoeff()>20){cout<<"gra has element larger than 20\n";}
 		/*check=(gra* ~_input[iidx])*rate + _w * regularization;
 		check2=(gra* ~_history[hidx])* rate + _h * regularization;
 		ckptr=check.getData();
@@ -185,7 +201,7 @@ void Recursive::bptt(mat& gra,float rate,float regularization){
 		iidx--;hidx--;
 		if(iidx<0||hidx<0)
 			break;
-		gra=_history.back()&((float)1.0-_history.back())&(~_h * gra);	
+		gra=_history.at(hidx)&((float)1.0-_history.at(hidx))&(~_h * gra);	
 	}
 	_input.pop_back();_history.pop_back();
 	}

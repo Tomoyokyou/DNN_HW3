@@ -111,17 +111,17 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 		}
 		tf+=clock()-t;
 		t=clock();
-		//TODO for all sequence
 		backPropagate(_learningRate,_reg,forwardSet, wordClassLabel);
 		tb+=clock()-t;
 		//reset
-		for (int i = 0; i < _transforms.size()-1; i++){
-			ACT test;
+		for (int i = 0; i < _transforms.size(); i++){
+			_transforms[i]->resetCounter();
+			/*ACT test;
 			test=_transforms.at(i)->getAct();
 			if(test==RECURSIVE){
 				Recursive* temp=(Recursive*)_transforms.at(i);
 				temp->resetCounter();
-			}
+			}*/
 		}
 		if(num%5000==0){
 			cout<<"Iter:"<<num<<endl;
@@ -164,13 +164,14 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 					//cout << newEntropy << endl;	
 				}
 				// reset counter
-				for (int i = 0; i < _transforms.size()-1; i++){
-					ACT test;
+				for (int i = 0; i < _transforms.size(); i++){
+					_transforms[i]->resetCounter();
+					/*ACT test;
 					test=_transforms.at(i)->getAct();
 					if(test==RECURSIVE){
 						Recursive* temp=(Recursive*)_transforms.at(i);
 						temp->resetCounter();
-					}
+					}*/
 				}
 			}
 			//save("temp.mdl");
@@ -241,13 +242,14 @@ void RNN::predict(Dataset& testData, const string& outName = "./model/testOutput
 				minIdx = j;
 			}
 			//reset counter
-			for (int i = 0; i < _transforms.size()-1; i++){
-				ACT test;
+			for (int i = 0; i < _transforms.size(); i++){
+				_transforms[i]->resetCounter();
+				/*ACT test;
 				test=_transforms.at(i)->getAct();
 				if(test==RECURSIVE){
 					Recursive* temp=(Recursive*)_transforms.at(i);
 					temp->resetCounter();
-				}
+				}*/
 			}
 		}
 		//cout << i/5 <<" min: " << (char)('a' + minIdx) << endl;
@@ -386,12 +388,16 @@ void RNN::backPropagate(float learningRate,float regularization,const vector<pai
 	vector<mat> delta(_transforms.size());
 	mat delta1,delta2;
 	mat classdiff;
+	mat softSum(_transforms.back()->getOutputDim(),1,0);
 	assert(fsize==classLabel.size());
 	for(size_t t=0;t<fsize;++t){
 		classdiff=(fromForward[fsize-1-t].first.at(tsize-1))&((float)1.0-fromForward[fsize-1-t].first.at(tsize-1));
 		delta1=(fromForward[fsize-1-t].first).at(tsize)-fromForward[fsize-1-t].second.at(0);
 		delta2=(fromForward[fsize-1-t].first).at(tsize+1)-fromForward[fsize-1-t].second.at(1);
-		_transforms.back()->backPropagate(fromForward[fsize-1-t].first.at(tsize-1),delta1,learningRate,regularization);
+		//this should update after all been calculated
+		((Softmax*)_transforms.back())->accGra(fromForward[fsize-1-t].first.at(tsize-1),delta1,learningRate,regularization);
+		    //_transforms.back()->backPropagate(fromForward[fsize-1-t].first.at(tsize-1),delta1,learningRate,regularization);
+		//this can update every time
 		_outSoftmax[classLabel[fsize-1-t]]->backPropagate(fromForward[fsize-1-t].first.at(tsize-1),delta2,learningRate,regularization);
 		delta1=classdiff & (~(_transforms.back()->getWeight())*delta1);
 		delta2=classdiff & (~(_outSoftmax[classLabel[fsize-1-t]]->getWeight())*delta2);
