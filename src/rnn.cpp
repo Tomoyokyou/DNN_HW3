@@ -96,10 +96,10 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 		num++;
 		t=clock();
 		for (int wordCnt = 0; wordCnt < crtSent.getSize()-1; wordCnt++){
+			//cout << wordCnt << endl;
 			// check whether OOV or not
 			int nextLabel = crtSent.getWord(wordCnt+1)->getClassLabel();
 			int tmpLabel = crtSent.getWord(wordCnt)->getClassLabel();
-			if (tmpLabel == -1 || nextLabel == -1) continue;
 			wordClassLabel.push_back(nextLabel);
 			feedForward(crtSent.getWord(wordCnt)->getMatFeature(), fin, nextLabel);
 			// store all forward output 
@@ -125,14 +125,14 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 		}
 		if(num%5000==0){
 			cout<<"Iter:"<<num<<endl;
-			cout<<"Feedforward Time: "<<(float)tf/(float)CLOCKS_PER_SEC<<" Backpropagation Time: "<<(float)tb/(float)CLOCKS_PER_SEC<<endl;
-			cout<<"Total Time:" <<(float)(tf+tb)/(float)CLOCKS_PER_SEC<<" seconds"<<endl;
+			//cout<<"Feedforward Time: "<<(float)tf/(float)CLOCKS_PER_SEC<<" Backpropagation Time: "<<(float)tb/(float)CLOCKS_PER_SEC<<endl;
+			//cout<<"Total Time:" <<(float)(tf+tb)/(float)CLOCKS_PER_SEC<<" seconds"<<endl;
 			tb=0;tf=0;
 		}
 		if( num % 20000 == 0 ){
 			clock_t test=clock();
-			epochCnt++;
-			cout << "iterNum is : "<<epochCnt<<", start validation\n";
+			//epochCnt++;
+			cout << "SentNum is now : "<< num <<", start validation\n";
 			//validResult.clear();
 			// calculate validation entropy
 			float newWordAcc = 0;
@@ -183,7 +183,7 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 			data.resetTrainSentCtr();
 			//Eout = computeErrRate(validLabel, validResult);
 		}
-		
+	//epochCnt ++;		
 	}
 	cout << "Finished training for " << num << " iterations.\n";
 }
