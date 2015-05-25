@@ -108,6 +108,17 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 			//cout<<"ans1 "<<ans[1].getRows()<<endl;
 			forwardSet.push_back(pair<vector<mat>,vector<mat>>(fin,ans));
 		}
+		// debugging
+		/*
+		for (int i = 0; i < wordClassLabel.size(); i++)
+			cout << wordClassLabel[i] << " ";
+		cout <<"yo"<< endl;
+		ans[0].print();
+		cout <<"qq"<<endl;
+		ans[1].print();
+		int a = 0;
+		cin >>a;
+		*/
 		tf+=clock()-t;
 		t=clock();
 		backPropagate(_learningRate,_reg,forwardSet, wordClassLabel);
@@ -132,7 +143,12 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 			cout<<"Total Time:" <<(float)(tf+tb)/(float)CLOCKS_PER_SEC<<" seconds"<<endl;}
 			tb=0;tf=0;
 		}
-		if( num % 20000 == 0 ){
+		if (num % 20000 == 0){
+			predict(data, "/home/jason/DNN_HW3/model/predict.csv");
+			calAcc();
+		}
+		/*
+		if( num % 5000 == 0 ){
 			clock_t test=clock();
 			cout << "SentNum is now : "<< num <<", start validation\n";
 			//validResult.clear();
@@ -168,18 +184,18 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 				// reset counter
 				for (int i = 0; i < _transforms.size(); i++){
 					_transforms[i]->resetCounter();
-					/*ACT test;
-					test=_transforms.at(i)->getAct();
-					if(test==RECURSIVE){
-						Recursive* temp=(Recursive*)_transforms.at(i);
-						temp->resetCounter();
-					}*/
+					//ACT test;
+					//test=_transforms.at(i)->getAct();
+					//if(test==RECURSIVE){
+					//	Recursive* temp=(Recursive*)_transforms.at(i);
+					//	temp->resetCounter();
+					//}
 				}
 				for(int i=0;i<_outSoftmax.size();++i){
 					if(!_outSoftmax[i]->isreset()) _outSoftmax[i]->resetCounter();
 				}
 			}
-			//save("temp.mdl");
+			save("class50.mdl");
 			cout <<"avg class Acc:"<< newClassAcc/10000 << endl;
 			cout <<"avg word Acc:"<< newWordAcc/10000 << endl;
 			cout<<"Time: "<<(float)(clock()-test)/(float)CLOCKS_PER_SEC<<" seconds"<<endl;
@@ -187,7 +203,9 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 			//predict(validResult, validSet);
 			data.resetTrainSentCtr();
 			//Eout = computeErrRate(validLabel, validResult);
+		
 		}
+		*/
 	}
 	cout << "Finished training for " << num << " iterations.\n";
 }
@@ -218,19 +236,18 @@ void RNN::predict(Dataset& testData, const string& outName = "./model/testOutput
 			for (int k = 0; k < testSent.getSize()-1; k++){
 				int currentClass = testSent.getWord(k)->getClassLabel();
 				int nextClass = testSent.getWord(k+1)->getClassLabel();
-				cout << k <<" " << currentClass << " " << nextClass << endl;
+
 				mat testInput = testSent.getWord(k)->getMatFeature();
-				cout << "start ff\n";
 				feedForward(testInput, fin, nextClass);
-				cout << "done ff\n";
+
 				MatrixXf* wordtmp = fin.back().getData();
 				MatrixXf* classtmp = fin[fin.size()-2].getData();
+
 
 				//cout << tmpAns << " " ;
 				//cout << (*tmp)(tmpAns, 0) << endl; 
 				int nextIndex = testSent.getWord(k+1)->getIndex();
 				// Cross Entropy method
-				cout << "calculate entropy\n";
 				if(nextIndex != -1)
 					crossEntropy -= log((double)((*wordtmp)(nextIndex, 0)));
 				if(nextClass != -1)
@@ -292,7 +309,8 @@ void RNN::save(const string& fn){
 		for(size_t i = 0; i < _transforms.size(); i++){
 			(_transforms.at(i))->write(ofs);
 		}
-		for (int i = 0; i < _outSoftmax.size(); i++){
+		ofs << "<outsoftmax>" << endl;
+		for(size_t i = 0; i < _outSoftmax.size(); i++){
 			(_outSoftmax.at(i))->write(ofs);
 		}
 	}
@@ -304,12 +322,17 @@ bool RNN::load(const string& fn){
 	char buf[50000];
 	if(!ifs){return false;}
 	else{
+		bool isOutSoftmax = false;
 		while(ifs.getline(buf, sizeof(buf)) != 0 ){
 			string tempStr(buf);
 			size_t found = tempStr.find_first_of(">");
 			size_t typeBegin = tempStr.find_first_of("<") + 1;
 			if(found !=std::string::npos ){
 				string type = tempStr.substr(typeBegin, found-typeBegin);
+				if(type == "outsoftmax"){
+					isOutSoftmax = true;
+					continue;
+				}	
 				stringstream ss(tempStr.substr(found+1));
 				string rows, cols;
 				size_t rowNum, colNum;
@@ -363,8 +386,11 @@ bool RNN::load(const string& fn){
 					cerr << "Undefined weight format! \" " << type << " \"\n";
 					exit(1);
 				}
-					
-				_transforms.push_back(pTransform);
+				
+				if(isOutSoftmax == false)
+					_transforms.push_back(pTransform);
+				else
+					_outSoftmax.push_back(pTransform);
 				delete [] h_data;
 			}
 		}
@@ -461,3 +487,24 @@ void calError(mat& errout,const mat& fin,Transforms* act,Transforms* nex,const m
 	}
 }
 
+void RNN::calAcc(){
+	string prePath("./model/predict.csv");
+	string ansPath("/home/ahpan/Data/answer.txt");
+	ifstream pre(prePath.c_str());
+	ifstream ans(ansPath.c_str());
+	if (!pre) cout <<"can't open pre file\n";
+	if (!ans) cout << "can't open ans file\n";
+	string a, p;
+	float acc = 0;
+	for (int i = 0; i <= 1040; i++){
+		pre >> p;
+		ans >> a;
+		//cout <<p << " " << a << endl;
+		if (p[p.find(",")+1] == a[a.find(",")+1])
+			acc++;
+	}
+	cout << "ground truth acc is " << acc/1040 << endl;
+	pre.close();
+	ans.close();
+
+}

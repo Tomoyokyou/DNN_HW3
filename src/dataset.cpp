@@ -102,7 +102,8 @@ Dataset::Dataset(const char* featurePath, const char* classPath, const char* snt
 		}
 		
 		auto it = _wordMap.find(tmpStr);
-		tmpSent.getSent().push_back(&it->second);
+		if (it->second.getClassLabel() >= 51)
+			tmpSent.getSent().push_back(&it->second);
 		/*
 		cout << tmpStr << " ";
 		cout << it->first << endl;
@@ -187,6 +188,7 @@ Sentence Dataset::getSentence() {
 Sentence Dataset::getTrainSent() {
 	Sentence tmp = _data[_trainLabel[_trainSentCtr]];
 	_trainSentCtr++;
+	//cout << "current training sentence is "<< _trainLabel[_trainSentCtr]<< endl;
 	if (_trainSentCtr == _trainLabel.size())
 		_trainSentCtr = 0;
 	return tmp;
@@ -238,7 +240,8 @@ void Dataset::parseTestData(const char* testPath){
 		
 		auto it = _wordMap.find(tmpStr);
 		//unordered_map<string, Word*> const_iterator it = _wordMap.find(tmpStr);
-		tmpSent.getSent().push_back(&it->second);
+		if (it->second.getClassLabel() >= 51)
+			tmpSent.getSent().push_back(&it->second);
 		/*
 		cout << tmpStr << " ";
 		cout << it->first << endl;

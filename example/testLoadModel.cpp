@@ -8,7 +8,7 @@ using namespace std;
 int main(int argc, char** argv){
 	string fn(argv[1]);
 	string featurePath = "/home/ahpan/DNN_HW3/model/preprocess_3/word_vector.txt";
-	string sntPath = "/home/ahpan/DNN_HW3/model/preprocess_3/train_oov.txt";
+	string sntPath = "/home/ahpan/DNN_HW3/model/preprocess_3/training_oov.txt";
 	string classPath = "/home/ahpan/DNN_HW3/model/preprocess_3/classes.sorted.txt";
 	string testPath = "/home/ahpan/DNN_HW3/model/preprocess_3/testing_data_parse2.txt";
 	Dataset d(featurePath.c_str(), classPath.c_str(), sntPath.c_str());

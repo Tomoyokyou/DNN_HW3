@@ -197,7 +197,7 @@ void Recursive::bptt(mat& gra,float rate,float regularization){
 		iidx--;hidx--;
 		if(iidx<0||hidx<0)
 			break;
-		gra=_history.at(hidx)&((float)1.0-_history.at(hidx))&(~_h * gra);	
+		gra=_history.at(hidx+1)&((float)1.0-_history.at(hidx+1))&(~_h * gra);	
 	}
 	_input.pop_back();_history.pop_back();
 	}
