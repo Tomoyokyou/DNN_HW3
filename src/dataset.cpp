@@ -229,10 +229,11 @@ void Dataset::parseTestData(const char* testPath){
 		if ( _wordMap.find(tmpStr) == _wordMap.end()){
 			//cout << "word out of vocabulary!!\n";
 			bla ++;
-			Word tmpWord;
-			tmpWord.setClassLabel(-1);
-			_wordMap[tmpStr] = tmpWord;
+			//Word tmpWord;
+			//tmpWord.setClassLabel(-1);
+			//_wordMap[tmpStr] = tmpWord;
 			//cout << tmpStr << endl;
+			tmpStr = "<unk>";
 		}
 		
 		auto it = _wordMap.find(tmpStr);

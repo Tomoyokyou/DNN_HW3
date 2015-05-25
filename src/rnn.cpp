@@ -142,8 +142,8 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 			for ( int j = 0; j < 10000; j++){
 				Sentence validSent = data.getValidSent();
 				for (int k = 0; k < validSent.getSize()-1; k++){
-					if (validSent.getWord(k)->getClassLabel() == -1 ||
-					    validSent.getWord(k+1)->getClassLabel() == -1) continue;
+					//if (validSent.getWord(k)->getClassLabel() == -1 ||
+					 //   validSent.getWord(k+1)->getClassLabel() == -1) continue;
 					mat validInput = validSent.getWord(k)->getMatFeature();
 					int nextClassLabel = validSent.getWord(k+1)->getClassLabel();
 					feedForward(validInput, fin, nextClassLabel);
@@ -174,6 +174,9 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 						Recursive* temp=(Recursive*)_transforms.at(i);
 						temp->resetCounter();
 					}*/
+				}
+				for(int i=0;i<_outSoftmax.size();++i){
+					if(!_outSoftmax[i]->isreset()) _outSoftmax[i]->resetCounter();
 				}
 			}
 			//save("temp.mdl");
@@ -251,6 +254,9 @@ void RNN::predict(Dataset& testData, const string& outName = "./model/testOutput
 					Recursive* temp=(Recursive*)_transforms.at(i);
 					temp->resetCounter();
 				}*/
+			}
+			for(int i=0;i<_outSoftmax.size();++i){
+				if(!_outSoftmax[i]->isreset()) _outSoftmax[i]->resetCounter();
 			}
 		}
 		//cout << i/5 <<" min: " << (char)('a' + minIdx) << endl;
