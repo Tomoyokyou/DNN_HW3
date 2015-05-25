@@ -48,7 +48,7 @@ DIR:
 	@mkdir -p obj
 	@mkdir -p bin
 
-larry:$(HEADEROBJ) example/processOOV.cpp
+larry:$(HEADEROBJ) example/testLoadModel.cpp
 	@echo "compiling testViterbi.cpp"
 	@$(CXX) $(CPPFLAGS) $(INCLUDE) -o bin/$@.app $^ $(LIBS) $(LIBRARY) $(LD_LIBRARY)
 
