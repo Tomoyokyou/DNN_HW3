@@ -20,10 +20,10 @@ int main(){
 	cout << d.getTestSentNum() << endl;
 	vector<size_t>dim;
 	dim.push_back(200);
-	dim.push_back(100);
+	dim.push_back(50);
 	dim.push_back(120);
-	RNN rnn(0.02,0.0,0.00001,0.25,NORMAL,dim,ALL, 5,d);
-	rnn.train(d,20,0.8,0.99);
+	RNN rnn(0.1,0.4,0.0001,0.5,NORMAL,dim,ALL, 3,d);
+	rnn.train(d,50,0.8,0.99);
 	rnn.save("model/out.mdl");
 
 }

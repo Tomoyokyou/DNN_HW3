@@ -43,7 +43,7 @@ public:
 
 private:
 	void feedForward(const mat& inputMat, vector<mat>& fout, int classLabel);
-	void backPropagate(float learningRate,float regularization,const vector<pair<vector<mat>,vector<mat>>>& fromForward,const vector<int>& classLabel);
+	void backPropagate(const vector<pair<vector<mat>,vector<mat>>>& fromForward,const vector<int>& classLabel);
 	//Dataset* _pData;
 	float _learningRate;
 	float _momentum;
@@ -52,7 +52,7 @@ private:
 	vector<Transforms*> _transforms;
 	vector<Transforms*> _outSoftmax;
 	vector<float> _validateAccuracy;
-
+	void status()const;
 };
 
 
