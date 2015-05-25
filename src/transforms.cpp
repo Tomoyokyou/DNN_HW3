@@ -16,23 +16,26 @@ typedef host_matrix<float> mat;
 
 /********************TRANSFORM**********************/
 
-Transforms::Transforms(const Transforms& t):_w(t._w){}
+Transforms::Transforms(const Transforms& t):_w(t._w){_counter=0;}
 
 //Transforms::Transforms(const mat& w,const mat& b){ RNN
 Transforms::Transforms(const mat& w){
 	_w=w;
+	_counter=0;
 }
 
 Transforms::Transforms(size_t inputdim,size_t outputdim,float range){
 	_w.resize(outputdim,inputdim);
 	rand_init(_w,range); // uniform distribution
 	_w/=sqrt((float)inputdim);
+	_counter=0;
 }
 
 Transforms::Transforms(size_t inputdim,size_t outputdim,myNnGen& ran){
 	_w.resize(outputdim,inputdim);
 	rand_norm(_w,ran);  // default variance = 0.1 , to change varance head to include/util.h
 	_w/=sqrt((float)inputdim);
+	_counter=0;
 }
 size_t Transforms::getInputDim()const{
 	return _w.getCols();
@@ -81,13 +84,17 @@ void Sigmoid::write(ofstream& out){
 /*****************************************************/
 /***********************SOFTMAX***********************/
 Softmax::Softmax(const Softmax& s): Transforms(s){
+	_graMem.resize(_w.getRows(),_w.getCols(),0);	
 }
 //Softmax::Softmax(const mat& w, const mat& bias):Transforms(w,bias){
 Softmax::Softmax(const mat& w):Transforms(w){
+	_graMem.resize(_w.getRows(),_w.getCols(),0);	
 }
 Softmax::Softmax(size_t inputdim,size_t outputdim,float range): Transforms(inputdim,outputdim,range){
+	_graMem.resize(_w.getRows(),_w.getCols(),0);	
 }
 Softmax::Softmax(size_t inputdim,size_t outputdim,myNnGen& ran): Transforms(inputdim,outputdim,ran){
+	_graMem.resize(_w.getRows(),_w.getCols(),0);	
 }
 void Softmax::forward(mat& out,const mat& in){
 	out=softmax(_w * in);
@@ -95,13 +102,19 @@ void Softmax::forward(mat& out,const mat& in){
 
 void Softmax::backPropagate(const mat& fin,const mat& delta,float rate, float regularization=0.0){
 	assert( (delta.getRows()==_w.getRows()) && (delta.getCols()==fin.getCols()) );
-
-	rate/=(float)fin.getCols();
+	//_graMem+=(delta* ~fin) * rate + _w *regularization;
+	//rate/=(float)fin.getCols();
 	_w-= (delta* ~fin) * rate + _w * regularization;
 }
 void Softmax::write(ofstream& out){
 	out<<"<softmax> "<<_w.getRows()<<" "<<_w.getCols()<<endl;
 	print(out);
+}
+
+void Softmax::accGra(const mat& fin,const mat& delta,float rate,float regularization=0.0){
+	assert( (delta.getRows()==_w.getRows()) && (delta.getCols()==fin.getCols()) );
+	_graMem+=(delta * ~fin) * rate + _w * regularization;
+	_counter++;
 }
 
 /*****************************************************/
@@ -111,14 +124,12 @@ Recursive::Recursive(const Recursive& s): Transforms(s),_step(s._step),_h(s._h){
 	_history.push_back(mat(s._h.getRows(),1,0));
 	_wmem.resize(_w.getRows(),_w.getCols(),0);
 	_hmem.resize(_h.getRows(),_h.getCols(),0);
-	_counter=0;
 }
 
 Recursive::Recursive(const mat& w,const mat& h,int step): Transforms(w),_step(step),_h(h){
 	_history.push_back(mat(_h.getRows(),1,0));
 	_wmem.resize(_w.getRows(),_w.getCols(),0);
 	_hmem.resize(_h.getRows(),_h.getCols(),0);
-	_counter=0;
 }
 Recursive::Recursive(size_t inputdim,size_t outputdim,float range,int step): Transforms(inputdim,outputdim,range),_step(step){
 	_h.resize(outputdim,outputdim);
@@ -127,7 +138,6 @@ Recursive::Recursive(size_t inputdim,size_t outputdim,float range,int step): Tra
 	_history.push_back(mat(_h.getRows(),1,0));
 	_wmem.resize(_w.getRows(),_w.getCols(),0);
 	_hmem.resize(_h.getRows(),_h.getCols(),0);
-	_counter=0;
 }
 Recursive::Recursive(size_t inputdim,size_t outputdim,myNnGen& ran,int step): Transforms(inputdim,outputdim,ran),_step(step){
 	_h.resize(outputdim,outputdim);
@@ -136,7 +146,6 @@ Recursive::Recursive(size_t inputdim,size_t outputdim,myNnGen& ran,int step): Tr
 	_history.push_back(mat(_h.getRows(),1,0));
 	_wmem.resize(_w.getRows(),_w.getCols(),0);
 	_hmem.resize(_h.getRows(),_h.getCols(),0);
-	_counter=0;
 }
 void Recursive::forward(mat& out,const mat& in){
 	_input.push_back(in);	
@@ -167,10 +176,13 @@ void Recursive::write(ofstream& out){
 void Recursive::bptt(mat& gra,float rate,float regularization){
 	int iidx=_input.size()-1,hidx=_history.size()-2;
 	//debug
+		//MatrixXf* gptr;
 		//mat check,check2;
 		//MatrixXf* ckptr,*ckptr2;
 	if(iidx>=0&&hidx>=0){
-	for(int count=_step;count>0;count--){
+	for(int count=0;count<_step;count++){
+		//gptr=gra.getData();
+		//if(gptr->array().maxCoeff()>20){cout<<"gra has element larger than 20\n";}
 		/*check=(gra* ~_input[iidx])*rate + _w * regularization;
 		check2=(gra* ~_history[hidx])* rate + _h * regularization;
 		ckptr=check.getData();
@@ -185,7 +197,7 @@ void Recursive::bptt(mat& gra,float rate,float regularization){
 		iidx--;hidx--;
 		if(iidx<0||hidx<0)
 			break;
-		gra=_history.back()&((float)1.0-_history.back())&(~_h * gra);	
+		gra=_history.at(hidx)&((float)1.0-_history.at(hidx))&(~_h * gra);	
 	}
 	_input.pop_back();_history.pop_back();
 	}

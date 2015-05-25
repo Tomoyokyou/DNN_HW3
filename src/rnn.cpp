@@ -11,7 +11,7 @@
 #include "util.h"
 #include "dataset.h"
 #include "transforms.h"
-
+#include <cfloat>
 #define MAX_EPOCH 1000
 
 using namespace std;
@@ -42,7 +42,7 @@ RNN::RNN(float learningRate, float momentum,float reg, float variance,Init init,
 			Transforms* pTransform;
 			pTransform = new Softmax(v.at(numOfLayers-2), ClassCount[i], gn);
 			_outSoftmax.push_back(pTransform);
-			cout << v.at(numOfLayers-2) << " " << ClassCount[i] <<endl;
+		//	cout << v.at(numOfLayers-2) << " " << ClassCount[i] <<endl;
 		}
 		break;
 	case UNIFORM:
@@ -111,22 +111,26 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 		}
 		tf+=clock()-t;
 		t=clock();
-		//TODO for all sequence
 		backPropagate(_learningRate,_reg,forwardSet, wordClassLabel);
 		tb+=clock()-t;
 		//reset
-		for (int i = 0; i < _transforms.size()-1; i++){
-			ACT test;
+		for (int i = 0; i < _transforms.size(); i++){
+			_transforms[i]->resetCounter();
+			/*ACT test;
 			test=_transforms.at(i)->getAct();
 			if(test==RECURSIVE){
 				Recursive* temp=(Recursive*)_transforms.at(i);
 				temp->resetCounter();
-			}
+			}*/
+		}
+		for(int i=0;i<wordClassLabel.size();++i){
+			if(!_outSoftmax[wordClassLabel[i]]->isreset()) _outSoftmax[wordClassLabel[i]]->resetCounter();
 		}
 		if(num%5000==0){
 			cout<<"Iter:"<<num<<endl;
+			if(num==5000){
 			cout<<"Feedforward Time: "<<(float)tf/(float)CLOCKS_PER_SEC<<" Backpropagation Time: "<<(float)tb/(float)CLOCKS_PER_SEC<<endl;
-			cout<<"Total Time:" <<(float)(tf+tb)/(float)CLOCKS_PER_SEC<<" seconds"<<endl;
+			cout<<"Total Time:" <<(float)(tf+tb)/(float)CLOCKS_PER_SEC<<" seconds"<<endl;}
 			tb=0;tf=0;
 		}
 		if( num % 20000 == 0 ){
@@ -135,33 +139,48 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 			cout << "iterNum is : "<<epochCnt<<", start validation\n";
 			//validResult.clear();
 			// calculate validation entropy
-			float newAcc = 0;
+			float newWordAcc = 0;
+			float newClassAcc = 0;
 			for ( int j = 0; j < 10000; j++){
 				Sentence validSent = data.getValidSent();
 				for (int k = 0; k < validSent.getSize()-1; k++){
 					if (validSent.getWord(k)->getClassLabel() == -1 ||
-					    validSent.getWord(k+1)->getClassLabel()) continue;
+					    validSent.getWord(k+1)->getClassLabel() == -1) continue;
 					mat validInput = validSent.getWord(k)->getMatFeature();
-					int tmpLabel = validSent.getWord(k+1)->getClassLabel();
-					feedForward(validInput, fin, tmpLabel);
-					int tmpClassAns = validSent.getWord(k+1)->getClassLabel();
-					int tmpWordAns = validSent.getWord(k+1)->getIndex();
-					if (tmpClassAns == -1) continue;
+					int nextClassLabel = validSent.getWord(k+1)->getClassLabel();
+					feedForward(validInput, fin, nextClassLabel);
+					int nextWordAns = validSent.getWord(k+1)->getIndex();
 					// word entropy
 					MatrixXf* tmp = fin.back().getData();
-					MatrixXf::Index maxR, maxC;
-					float maxVal = tmp->maxCoeff(&maxR, &maxC);
+					MatrixXf::Index w_maxR, w_maxC, c_maxR, c_maxC;
+					float maxVal = tmp->maxCoeff(&w_maxR, &w_maxC);
 					//cout << "maximum : " << maxR <<" " <<  maxC << " " << tmpAns << endl;
-					if (maxR == tmpWordAns){
-						newAcc += 1.0/validSent.getSize();
+					MatrixXf* ClassTmp = fin[fin.size()-2].getData();
+					maxVal = ClassTmp->maxCoeff(&c_maxR, &c_maxC);
+					if ( c_maxR == nextClassLabel ){
+						newClassAcc += 1.0/validSent.getSize();
+					}
+					if (w_maxR == nextWordAns && c_maxR == nextClassLabel ){
+						newWordAcc += 1.0/validSent.getSize();
 					}
 
 					//newEntropy += log((*tmp)(tmpAns,0));
 					//cout << newEntropy << endl;	
 				}
+				// reset counter
+				for (int i = 0; i < _transforms.size(); i++){
+					_transforms[i]->resetCounter();
+					/*ACT test;
+					test=_transforms.at(i)->getAct();
+					if(test==RECURSIVE){
+						Recursive* temp=(Recursive*)_transforms.at(i);
+						temp->resetCounter();
+					}*/
+				}
 			}
 			//save("temp.mdl");
-			cout <<"avg Acc:"<< newAcc << endl;
+			cout <<"avg class Acc:"<< newClassAcc/10000 << endl;
+			cout <<"avg word Acc:"<< newWordAcc/10000 << endl;
 			cout<<"Time: "<<(float)(clock()-test)/(float)CLOCKS_PER_SEC<<" seconds"<<endl;
 			data.resetValidSentCtr();
 			//predict(validResult, validSet);
@@ -173,11 +192,75 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 	cout << "Finished training for " << num << " iterations.\n";
 }
 
-void RNN::predict(vector<size_t>& result, const mat& inputMat){
-	//mat outputMat(1, 1);
-	//vector<mat> fout;
-	//feedForward(inputMat,fout); // modified
-	//computeLabel(result, fout.back());
+
+void RNN::predict(Dataset& testData, const string& outName = "./model/testOutput.csv"){
+	
+	ofstream ofs(outName);
+	if(!ofs.is_open()){
+		cerr << "Fail to open file: " << outName << " !\n";
+		exit(1);
+	}
+	ofs << "Id,Answer\n";
+
+	size_t	testNum = testData.getTestSentNum();
+	cout << "Questions:" << testNum/5 << endl;
+
+	vector<mat> fin;
+	size_t i = 0;
+	while( i < testNum ){
+		double tempMin = DBL_MAX;
+		size_t minIdx = 0;
+		for(size_t j = 0; j < 5; j++ ){
+			Sentence testSent = testData.getTestSent();
+			++i; 
+			fin.clear();
+			double crossEntropy = 0.0;
+			for (int k = 0; k < testSent.getSize()-1; k++){
+				int currentClass = testSent.getWord(k)->getClassLabel();
+				int nextClass = testSent.getWord(k+1)->getClassLabel();
+				
+				if( currentClass == -1 || nextClass == -1)
+					continue;
+				mat testInput = testSent.getWord(k)->getMatFeature();
+				feedForward(testInput, fin, nextClass);
+				MatrixXf* wordtmp = fin.back().getData();
+				MatrixXf* classtmp = fin[fin.size()-2].getData();
+
+				//cout << tmpAns << " " ;
+				//cout << (*tmp)(tmpAns, 0) << endl; 
+				int nextIndex = testSent.getWord(k+1)->getIndex();
+				// Cross Entropy method
+				if(nextIndex != -1)
+					crossEntropy -= log((double)((*wordtmp)(nextIndex, 0)));
+				if(nextClass != -1)
+					crossEntropy -= log((double)((*classtmp)(nextClass, 0)));
+				//MatrixXf::Index maxR, maxC;
+				//float maxVal = tmp->maxCoeff(&maxR, &maxC);
+				//if (maxR == tmpAns){
+				//	newAcc += 1.0/validSent.getSize();
+				//}
+			}
+			//cout << crossEntropy <<endl;
+			if( tempMin > crossEntropy ){
+				tempMin = crossEntropy;
+				minIdx = j;
+			}
+			//reset counter
+			for (int i = 0; i < _transforms.size(); i++){
+				_transforms[i]->resetCounter();
+				/*ACT test;
+				test=_transforms.at(i)->getAct();
+				if(test==RECURSIVE){
+					Recursive* temp=(Recursive*)_transforms.at(i);
+					temp->resetCounter();
+				}*/
+			}
+		}
+		//cout << i/5 <<" min: " << (char)('a' + minIdx) << endl;
+		ofs << i/5 << "," << (char)('a' + minIdx) << endl;
+	}
+	testData.resetTestSentCtr();
+	ofs.close();
 }
 
 void RNN::setLearningRate(float learningRate){
@@ -306,36 +389,30 @@ void RNN::backPropagate(float learningRate,float regularization,const vector<pai
 	size_t fsize=fromForward.size();
 	size_t tsize=_transforms.size();
 	ACT testType;
-	vector<mat> delta(_transforms.size());
+	//vector<mat> delta(_transforms.size());
+	mat delta;
 	mat delta1,delta2;
 	mat classdiff;
+	mat softSum(_transforms.back()->getOutputDim(),1,0);
 	assert(fsize==classLabel.size());
 	for(size_t t=0;t<fsize;++t){
 		classdiff=(fromForward[fsize-1-t].first.at(tsize-1))&((float)1.0-fromForward[fsize-1-t].first.at(tsize-1));
 		delta1=(fromForward[fsize-1-t].first).at(tsize)-fromForward[fsize-1-t].second.at(0);
 		delta2=(fromForward[fsize-1-t].first).at(tsize+1)-fromForward[fsize-1-t].second.at(1);
-		_transforms.back()->backPropagate(fromForward[fsize-1-t].first.at(tsize-1),delta1,learningRate,regularization);
-		_outSoftmax[classLabel[fsize-1-t]]->backPropagate(fromForward[fsize-1-t].first.at(tsize-1),delta2,learningRate,regularization);
+		//this should update after all been calculated
+		((Softmax*)_transforms.back())->accGra(fromForward[fsize-1-t].first.at(tsize-1),delta1,learningRate,regularization);
+		    //_transforms.back()->backPropagate(fromForward[fsize-1-t].first.at(tsize-1),delta1,learningRate,regularization);
+		((Softmax*)_outSoftmax[classLabel[fsize-1-t]])->accGra(fromForward[fsize-1-t].first.at(tsize-1),delta2,learningRate,regularization);
 		delta1=classdiff & (~(_transforms.back()->getWeight())*delta1);
 		delta2=classdiff & (~(_outSoftmax[classLabel[fsize-1-t]]->getWeight())*delta2);
-		delta.front()=delta1+delta2;
+		delta=delta1+delta2;
 		//_transforms.back()->backPropagate(fromForward[fsize-1-t].first.at(tsize-1),delta[0],learningRate,regularization);
-		for(size_t k=1;k<tsize;++k){
+		_transforms[0]->backPropagate(fromForward[fsize-1-t].first.at(0),delta,learningRate,regularization);
+		/*for(size_t k=1;k<tsize;++k){
 				//calError(delta[k],fromForward[fsize-1-t].first.at(tsize-k),_transforms[tsize-k],_transforms[tsize-1-k],delta[k-1]);
 				_transforms[tsize-1-k]->backPropagate(fromForward[fsize-1-t].first.at(tsize-1-k),delta[0],learningRate,regularization);
-		}
+		}*/
 	}
-/*
-	vector<mat> err;
-	err.resize(_transforms.size());
-	err.back() = fin.back() - answer;  //cross entropy gradient
-	size_t size=_transforms.size();
-	_transforms.back()->backPropagate(fin.at(size-1),err[size-1],learningRate,momentum,regularization); //for softmax
-	for(int i=0;i<_transforms.size()-1;i++){
-		calError(err[size-2-i],fin.at(size-1-i),_transforms[size-1-i],_transforms[size-2-i],err.at(size-1-i));
-		_transforms[size-2-i]->backPropagate(fin.at(size-2-i),err.at(size-2-i),learningRate,momentum,regularization);
-	}
-*/
 }
 
 
