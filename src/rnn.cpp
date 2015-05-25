@@ -90,10 +90,11 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 	float Eout = 1;
 	float pastEout = Eout;
 	float minEout = Eout;
-	
+	float maxAcc =0;
 	size_t oneEpoch = data.getTrainSentNum();
 	size_t epochCnt = 0;
 	size_t num = 0;
+	clock_t t=clock();
 	vector<mat> fin;
 	vector< pair<vector<mat>,vector<mat> > > forwardSet;
 	vector<int> wordClassLabel;
@@ -129,47 +130,21 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 		for(int i=0;i<wordClassLabel.size();++i){
 			if(!_outSoftmax[wordClassLabel[i]]->isreset()) _outSoftmax[wordClassLabel[i]]->resetCounter(_learningRate);
 		}
-		if( num % 5000 == 0 ){
-			clock_t test=clock();
-			cout << "SentNum is now : "<< num <<", start validation\n";
-			float newWordAcc = 0;
-			float newClassAcc = 0;
-			for ( int j = 0; j < 10000; j++){
-				Sentence validSent = data.getValidSent();
-				for (int k = 0; k < validSent.getSize()-1; k++){
-					mat validInput = validSent.getWord(k)->getMatFeature();
-					int nextClassLabel = validSent.getWord(k+1)->getClassLabel();
-					feedForward(validInput, fin, nextClassLabel);
-					int nextWordAns = validSent.getWord(k+1)->getIndex();
-					// word entropy
-					MatrixXf* tmp = fin.back().getData();
-					MatrixXf::Index w_maxR, w_maxC, c_maxR, c_maxC;
-					float maxVal = tmp->maxCoeff(&w_maxR, &w_maxC);
-					MatrixXf* ClassTmp = fin[fin.size()-2].getData();
-					maxVal = ClassTmp->maxCoeff(&c_maxR, &c_maxC);
-					if ( c_maxR == nextClassLabel ){
-						newClassAcc += 1.0/validSent.getSize();
+		if (num % 20000 == 0){
+			cout<<"Iter: "<<num<<endl;
+			predict(data, "model/predict.csv");
+			float temp=calAcc();
+			if(maxAcc<temp){
+				maxAcc=temp;
+				if(maxAcc>40){
+					string modelpath="./model/acc_";
+					stringstream s;
+					s<<modelpath<<maxAcc<<".mdl";
+					save(s.str());
 					}
-					if (w_maxR == nextWordAns && c_maxR == nextClassLabel ){
-						newWordAcc += 1.0/validSent.getSize();
-					}
-				}
-				// reset counter
-				for (int i = 0; i < _transforms.size(); i++){
-					_transforms[i]->resetCounter(0);
-				}
-				for(int i=0;i<_outSoftmax.size();++i){
-					if(!_outSoftmax[i]->isreset()) _outSoftmax[i]->resetCounter(0);
-				}
 			}
-			//save("temp.mdl");
-			cout <<"avg class Acc:"<< newClassAcc/10000 << endl;
-			cout <<"avg word Acc:"<< newWordAcc/10000 << endl;
-			cout<<"Time: "<<(float)(clock()-test)/(float)CLOCKS_PER_SEC<<" seconds"<<endl;
-			data.resetValidSentCtr();
-			//predict(validResult, validSet);
-			data.resetTrainSentCtr();
-			//Eout = computeErrRate(validLabel, validResult);
+			_learningRate=(_learningRate<1e-6)?1e-6:_learningRate*alpha;
+			cout<<"current time: "<<(float)(clock()-t)/(float)CLOCKS_PER_SEC<<endl;
 		}
 	}
 	cout << "Finished training for " << num << " iterations.\n";
@@ -201,55 +176,32 @@ void RNN::predict(Dataset& testData, const string& outName = "./model/testOutput
 			for (int k = 0; k < testSent.getSize()-1; k++){
 				int currentClass = testSent.getWord(k)->getClassLabel();
 				int nextClass = testSent.getWord(k+1)->getClassLabel();
-			
-				cout << "Hi " <<  currentClass << " " << nextClass << endl;
 
-				if( currentClass == -1 || nextClass == -1)
-					continue;
 				mat testInput = testSent.getWord(k)->getMatFeature();
 				feedForward(testInput, fin, nextClass);
-
-				cout << "Finished feef forward!\n";
 
 				MatrixXf* wordtmp = fin.back().getData();
 				MatrixXf* classtmp = fin[fin.size()-2].getData();
 
-				cout << "GetData. \n";
-
-				//cout << tmpAns << " " ;
-				//cout << (*tmp)(tmpAns, 0) << endl; 
 				int nextIndex = testSent.getWord(k+1)->getIndex();
 				// Cross Entropy method
 				if(nextIndex != -1)
 					crossEntropy -= log((double)((*wordtmp)(nextIndex, 0)));
 				if(nextClass != -1)
 					crossEntropy -= log((double)((*classtmp)(nextClass, 0)));
-				//MatrixXf::Index maxR, maxC;
-				//float maxVal = tmp->maxCoeff(&maxR, &maxC);
-				//if (maxR == tmpAns){
-				//	newAcc += 1.0/validSent.getSize();
-				//}
 			}
-			//cout << crossEntropy <<endl;
 			if( tempMin > crossEntropy ){
 				tempMin = crossEntropy;
 				minIdx = j;
 			}
-			//reset counter
 			for (int i = 0; i < _transforms.size(); i++){
 				_transforms[i]->resetCounter(0);
-				/*ACT test;
-				test=_transforms.at(i)->getAct();
-				if(test==RECURSIVE){
-					Recursive* temp=(Recursive*)_transforms.at(i);
-					temp->resetCounter();
-				}*/
 			}
 			for(int i=0;i<_outSoftmax.size();++i){
 				if(!_outSoftmax[i]->isreset()) _outSoftmax[i]->resetCounter(0);
 			}
 		}
-		cout << i/5 <<" min: " << (char)('a' + minIdx) << endl;
+		//cout << i/5 <<" min: " << (char)('a' + minIdx) << endl;
 		ofs << i/5 << "," << (char)('a' + minIdx) << endl;
 	}
 	testData.resetTestSentCtr();
@@ -453,3 +405,24 @@ void calError(mat& errout,const mat& fin,Transforms* act,Transforms* nex,const m
 	}
 }
 
+float RNN::calAcc(){
+	string prePath("./model/predict.csv");
+	string ansPath("/home/ahpan/Data/answer.txt");
+	ifstream pre(prePath.c_str());
+	ifstream ans(ansPath.c_str());
+	if (!pre) cout <<"can't open pre file\n";
+	if (!ans) cout << "can't open ans file\n";
+	string a, p;
+	float acc = 0;
+	for (int i = 0; i <= 1040; i++){
+		pre >> p;
+		ans >> a;
+		//cout <<p << " " << a << endl;
+		if (p[p.find(",")+1] == a[a.find(",")+1])
+			acc++;
+	}
+	cout << "ground truth acc is " << acc/1040 << endl;
+	pre.close();
+	ans.close();
+	return acc/(float)1040;
+}

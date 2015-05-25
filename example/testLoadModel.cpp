@@ -17,8 +17,8 @@ int main(int argc, char** argv){
 	RNN rnn;
 	rnn.load(fn);
 	cout << "End of load file!\n";
-	rnn.predict(d, "/home/larry/Documents/MLDS/DNN_HW3/model/rnnPredict.csv");
-
+	//rnn.predict(d, "/home/larry/Documents/MLDS/DNN_HW3/model/rnnPredict.csv");
+		rnn.predict(d, "./model/test.csv");
 	//rnn.save("./model/debug.mdl");
 	cout << "End of save file!\n";
 	return 0;
