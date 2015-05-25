@@ -218,13 +218,20 @@ void RNN::predict(Dataset& testData, const string& outName = "./model/testOutput
 			for (int k = 0; k < testSent.getSize()-1; k++){
 				int currentClass = testSent.getWord(k)->getClassLabel();
 				int nextClass = testSent.getWord(k+1)->getClassLabel();
-				
+			
+				cout << "Hi " <<  currentClass << " " << nextClass << endl;
+
 				if( currentClass == -1 || nextClass == -1)
 					continue;
 				mat testInput = testSent.getWord(k)->getMatFeature();
 				feedForward(testInput, fin, nextClass);
+
+				cout << "Finished feef forward!\n";
+
 				MatrixXf* wordtmp = fin.back().getData();
 				MatrixXf* classtmp = fin[fin.size()-2].getData();
+
+				cout << "GetData. \n";
 
 				//cout << tmpAns << " " ;
 				//cout << (*tmp)(tmpAns, 0) << endl; 
@@ -259,7 +266,7 @@ void RNN::predict(Dataset& testData, const string& outName = "./model/testOutput
 				if(!_outSoftmax[i]->isreset()) _outSoftmax[i]->resetCounter();
 			}
 		}
-		//cout << i/5 <<" min: " << (char)('a' + minIdx) << endl;
+		cout << i/5 <<" min: " << (char)('a' + minIdx) << endl;
 		ofs << i/5 << "," << (char)('a' + minIdx) << endl;
 	}
 	testData.resetTestSentCtr();
