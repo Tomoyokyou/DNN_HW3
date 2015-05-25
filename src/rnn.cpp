@@ -298,6 +298,10 @@ void RNN::save(const string& fn){
 		for(size_t i = 0; i < _transforms.size(); i++){
 			(_transforms.at(i))->write(ofs);
 		}
+		ofs << "<outsoftmax>" << endl;
+		for(size_t i = 0; i < _outSoftmax.size(); i++){
+			(_outSoftmax.at(i))->write(ofs);
+		}
 	}
 	ofs.close();
 }
@@ -307,12 +311,17 @@ bool RNN::load(const string& fn){
 	char buf[50000];
 	if(!ifs){return false;}
 	else{
+		bool isOutSoftmax = false;
 		while(ifs.getline(buf, sizeof(buf)) != 0 ){
 			string tempStr(buf);
 			size_t found = tempStr.find_first_of(">");
 			size_t typeBegin = tempStr.find_first_of("<") + 1;
 			if(found !=std::string::npos ){
 				string type = tempStr.substr(typeBegin, found-typeBegin);
+				if(type == "outsoftmax"){
+					isOutSoftmax = true;
+					continue;
+				}	
 				stringstream ss(tempStr.substr(found+1));
 				string rows, cols;
 				size_t rowNum, colNum;
@@ -366,8 +375,11 @@ bool RNN::load(const string& fn){
 					cerr << "Undefined weight format! \" " << type << " \"\n";
 					exit(1);
 				}
-					
-				_transforms.push_back(pTransform);
+				
+				if(isOutSoftmax == false)
+					_transforms.push_back(pTransform);
+				else
+					_outSoftmax.push_back(pTransform);
 				delete [] h_data;
 			}
 		}
