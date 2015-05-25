@@ -129,9 +129,6 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 		for(int i=0;i<wordClassLabel.size();++i){
 			if(!_outSoftmax[wordClassLabel[i]]->isreset()) _outSoftmax[wordClassLabel[i]]->resetCounter(_learningRate);
 		}
-		if(num%1000==0){
-			cout<<"Iter:"<<num<<endl;
-		}
 		if( num % 5000 == 0 ){
 			clock_t test=clock();
 			cout << "SentNum is now : "<< num <<", start validation\n";
@@ -174,9 +171,6 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 			data.resetTrainSentCtr();
 			//Eout = computeErrRate(validLabel, validResult);
 		}
-		/*
-		cout<<"end of program to debug\n";
-		exit(0);//debug here*/
 	}
 	cout << "Finished training for " << num << " iterations.\n";
 }

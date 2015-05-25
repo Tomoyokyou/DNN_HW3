@@ -22,7 +22,7 @@ int main(){
 	dim.push_back(200);
 	dim.push_back(50);
 	dim.push_back(120);
-	RNN rnn(0.1,0.4,0.0001,0.5,NORMAL,dim,ALL, 3,d);
+	RNN rnn(0.01,0.9,0.0001,1,NORMAL,dim,ALL, 5,d);
 	rnn.train(d,50,0.8,0.99);
 	rnn.save("model/out.mdl");
 
