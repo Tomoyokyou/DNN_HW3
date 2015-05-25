@@ -407,7 +407,7 @@ void calError(mat& errout,const mat& fin,Transforms* act,Transforms* nex,const m
 
 float RNN::calAcc(){
 	string prePath("./model/predict.csv");
-	string ansPath("/home/ahpan/Data/answer.txt");
+	string ansPath("/home/hui/project/rnnFeat/answer.txt");
 	ifstream pre(prePath.c_str());
 	ifstream ans(ansPath.c_str());
 	if (!pre) cout <<"can't open pre file\n";

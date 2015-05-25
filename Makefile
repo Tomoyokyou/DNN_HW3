@@ -5,7 +5,7 @@ NVCC=nvcc -arch=sm_21 -w
 CUDA_DIR=/usr/local/cuda/
 EIGENDIR=/usr/local/include/eigen3/
 
-EXECUTABLES=#train predict
+EXECUTABLES=train #predict
 LIBCUMATDIR=tool/libcumatrix/
 CUMATOBJ=$(LIBCUMATDIR)obj/device_matrix.o $(LIBCUMATDIR)obj/cuda_memory_manager.o
 HEADEROBJ=obj/util.o obj/transforms.o obj/rnn.o obj/dataset.o obj/parser.o
@@ -52,7 +52,7 @@ larry:$(HEADEROBJ) example/testLoadModel.cpp
 	@echo "compiling testLoadModel.cpp"
 	@$(CXX) $(CPPFLAGS) $(INCLUDE) -o bin/$@.app $^ $(LIBS) $(LIBRARY) $(LD_LIBRARY)
 
-train:$(HEADEROBJ) example/train.cpp
+train:$(HEADEROBJ) example/rnnTrain.cpp
 	@echo "compiling train.app for DNN Training"
 	@$(CXX) $(CPPFLAGS) $(INCLUDE) -o bin/$@.app $^ $(LIBS) $(LIBRARY) $(LD_LIBRARY)
 
