@@ -218,11 +218,11 @@ void RNN::predict(Dataset& testData, const string& outName = "./model/testOutput
 			for (int k = 0; k < testSent.getSize()-1; k++){
 				int currentClass = testSent.getWord(k)->getClassLabel();
 				int nextClass = testSent.getWord(k+1)->getClassLabel();
-				
-				if( currentClass == -1 || nextClass == -1)
-					continue;
+				cout << k <<" " << currentClass << " " << nextClass << endl;
 				mat testInput = testSent.getWord(k)->getMatFeature();
+				cout << "start ff\n";
 				feedForward(testInput, fin, nextClass);
+				cout << "done ff\n";
 				MatrixXf* wordtmp = fin.back().getData();
 				MatrixXf* classtmp = fin[fin.size()-2].getData();
 
@@ -230,6 +230,7 @@ void RNN::predict(Dataset& testData, const string& outName = "./model/testOutput
 				//cout << (*tmp)(tmpAns, 0) << endl; 
 				int nextIndex = testSent.getWord(k+1)->getIndex();
 				// Cross Entropy method
+				cout << "calculate entropy\n";
 				if(nextIndex != -1)
 					crossEntropy -= log((double)((*wordtmp)(nextIndex, 0)));
 				if(nextClass != -1)
@@ -290,6 +291,9 @@ void RNN::save(const string& fn){
 	if (ofs.is_open()){
 		for(size_t i = 0; i < _transforms.size(); i++){
 			(_transforms.at(i))->write(ofs);
+		}
+		for (int i = 0; i < _outSoftmax.size(); i++){
+			(_outSoftmax.at(i))->write(ofs);
 		}
 	}
 	ofs.close();

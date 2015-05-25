@@ -49,7 +49,7 @@ DIR:
 	@mkdir -p bin
 
 larry:$(HEADEROBJ) example/testLoadModel.cpp
-	@echo "compiling testViterbi.cpp"
+	@echo "compiling testLoadModel.cpp"
 	@$(CXX) $(CPPFLAGS) $(INCLUDE) -o bin/$@.app $^ $(LIBS) $(LIBRARY) $(LD_LIBRARY)
 
 train:$(HEADEROBJ) example/train.cpp
