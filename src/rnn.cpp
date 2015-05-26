@@ -75,7 +75,7 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 	float Eout = 1;
 	float pastEout = Eout;
 	float minEout = Eout;
-	
+	float maxAcc = 0;
 	size_t oneEpoch = data.getTrainSentNum();
 	size_t epochCnt = 0;
 	size_t num = 0;
@@ -145,7 +145,18 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 		}
 		if (num % 20000 == 0){
 			predict(data, "/home/jason/DNN_HW3/model/predict.csv");
-			calAcc();
+			float temp = calAcc();
+			if(maxAcc<temp){
+				maxAcc=temp;
+				if(maxAcc>40){
+					string modelpath="./model/acc_";
+					stringstream s;
+					s<<modelpath<<maxAcc<<".mdl";
+					save(s.str());
+					}
+			}
+			_learningRate=(_learningRate<1e-6)?1e-6:_learningRate*alpha;
+			cout<<"current time: "<<(float)(clock()-t)/(float)CLOCKS_PER_SEC<<endl;
 		}
 		/*
 		if( num % 5000 == 0 ){
@@ -487,7 +498,7 @@ void calError(mat& errout,const mat& fin,Transforms* act,Transforms* nex,const m
 	}
 }
 
-void RNN::calAcc(){
+float RNN::calAcc(){
 	string prePath("./model/predict.csv");
 	string ansPath("/home/ahpan/Data/answer.txt");
 	ifstream pre(prePath.c_str());
@@ -506,5 +517,5 @@ void RNN::calAcc(){
 	cout << "ground truth acc is " << acc/1040 << endl;
 	pre.close();
 	ans.close();
-
+	return acc/(float)1040;
 }

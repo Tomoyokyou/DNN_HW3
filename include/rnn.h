@@ -40,7 +40,7 @@ public:
 	size_t getNumLayers();
 	void save(const string& fn);
 	bool load(const string& fn);
-	void calAcc();
+	float calAcc();
 private:
 	void feedForward(const mat& inputMat, vector<mat>& fout, int classLabel);
 	void backPropagate(float learningRate,float regularization,const vector<pair<vector<mat>,vector<mat>>>& fromForward,const vector<int>& classLabel);
