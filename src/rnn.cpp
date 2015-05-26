@@ -130,7 +130,7 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 			//feedForward(crtSent.getWord(wordCnt)->getMatFeature(), fin, nextLabel);
 			int nextLabel=wptr->getClassLabel();
 			wordClassLabel.push_back(nextLabel);
-			feedForward(wptrp->getMatFeature(),fin,nextLabel);
+			feedForward((*wptrp->getMatPtr()),fin,nextLabel);
 			// store all forward output 
 			//ans[0]=crtSent.getWord(wordCnt+1)->getClassOutput(data);
 			ans[0]=wptr->getClassOutput(data);

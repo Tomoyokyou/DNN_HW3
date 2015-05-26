@@ -23,6 +23,7 @@ class Word{
 		mat getClassOutput(Dataset& d);
 		mat getWordOutput(Dataset& d);
 		mat getMatFeature();
+		mat* getMatPtr(){mat* temp=&_feature;return temp;}
 		void setClassLabel(int i) {_classLabel = i;}
 		void setIndex(int i) {_index = i;}
 		int getFeatureDim() {return _feature.getRows(); }
