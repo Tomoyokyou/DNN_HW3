@@ -18,11 +18,20 @@ class Word{
 		Word() : _classLabel(-1), _index(0) {}
 		Word(int clabel, int index, mat feature):
 		_classLabel(clabel), _index(index), _feature(feature) {}
+		//
+		Word(int clabel, int index, mat feature, int ccountsize,int classcountidx);
+		void genMat(int ccountsize,int classcountidx);
+		//
 		int getClassLabel() {return _classLabel; }
 		int getIndex() {return _index; }
 		mat getClassOutput(Dataset& d);
 		mat getWordOutput(Dataset& d);
+		
+		mat* getClassOutputPtr(){mat* tmp=&classoutput; return tmp;}
+		mat* getWordOutputPtr(){mat* tmp=&wordoutput; return tmp;}
+
 		mat getMatFeature();
+		mat* getMatPtr(){mat* temp=&_feature;return temp;}
 		void setClassLabel(int i) {_classLabel = i;}
 		void setIndex(int i) {_index = i;}
 		int getFeatureDim() {return _feature.getRows(); }
@@ -30,6 +39,8 @@ class Word{
 		int _classLabel;
 		int _index; // index inside label
 		mat _feature;
+		mat classoutput;
+		mat wordoutput;
 };
 
 class Sentence: public Word{
@@ -43,6 +54,9 @@ class Sentence: public Word{
 				cout << _sentence[i]->getClassLabel() << " ";
 			cout << endl;
 		}
+		//
+		vector<Word*>* getWordVecPtr(){vector<Word*>* tmp=&_sentence;return tmp;}
+		//
 	private:
 		vector<Word*> _sentence;
 };
@@ -66,6 +80,12 @@ class Dataset{
 	void   resetTestSentCtr()  {_testSentCtr = 0;}
 	Sentence getSentence();
 	Sentence getTrainSent();
+	//
+	void getAllTrainSent(vector<Sentence>& out);
+	void getAllTestSent(vector<Sentence>& out);
+	void getAllValidSent(vector<Sentence>& out);
+	//
+
 	Sentence getValidSent();
 	Sentence getTestSent();
 	size_t getSentCtr() {return _sentCtr;}

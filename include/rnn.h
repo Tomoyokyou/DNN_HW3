@@ -42,8 +42,12 @@ public:
 	bool load(const string& fn);
 	float calAcc();
 private:
-	void feedForward(const mat& inputMat, vector<mat>& fout, int classLabel);
-	void backPropagate(const vector<pair<vector<mat>,vector<mat>>>& fromForward,const vector<int>& classLabel);
+	//void feedForward(const mat& inputMat, vector<mat>& fout, int classLabel);
+	//void feedForward(mat* inputMat, vector<mat>& fout, int classLabel);
+	void feedForward(const vector<Word*>& words,vector<pair<vector<mat>,vector<mat*>>>& out,vector<int>& classout);
+	void feedForwardOut(mat* inputMat,vector<mat>& fout,int classLabel);
+
+	void backPropagate(const vector<pair<vector<mat>,vector<mat*>>>& fromForward,const vector<int>& classLabel);
 	//Dataset* _pData;
 	float _learningRate;
 	float _momentum;

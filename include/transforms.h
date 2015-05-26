@@ -104,7 +104,9 @@ class Recursive : public Transforms{
 				*hptr=(hptr->array()<-50).select(-50,*hptr);
 				_w-=(_wmem)*rate ;
 				_h-=(_hmem)*rate;
-				_history.clear();_input.clear();
+				_history.clear();
+				//_input.clear();
+				_inputPtr.clear();///
 				_history.push_back(mat(_h.getRows(),1,0));
 				_wmem.resize(_w.getRows(),_w.getCols(),0);
 				_hmem.resize(_h.getRows(),_h.getCols(),0);
@@ -112,12 +114,16 @@ class Recursive : public Transforms{
 				_pwh.resize(_h.getRows(),_h.getCols(),0);
 				_counter=0;
 				}
+	void forwardFirst(mat& out,mat* in);
 	int getStep()const {return _step;}
 	
 	private:
 		void bptt(mat& gra,float rate,float regularization,float momentum);
 		vector<mat> _history;
-		vector<mat> _input;
+		//vector<mat> _input;
+		//
+		vector<mat*> _inputPtr;
+		//
 		int _step;
 		mat _h;
 		mat _pwh;
