@@ -100,6 +100,7 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 	vector<int> wordClassLabel;
 	vector<mat> ans(2);
 	Sentence crtSent;
+	//string ansPath("/home/hui/project/rnnFeat/answer.txt");
 	string ansPath("/home/ahpan/Data/answer.txt");
 	vector<char> gndAns;
 	readAns(ansPath,gndAns);	
@@ -121,6 +122,7 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 		num++;
 		Word* wptr;
 		Word* wptrp=(it->getSize()>0)? it->getWord(0):NULL;
+		if(wptrp!=NULL){
 		//for (int wordCnt = 0; wordCnt < crtSent.getSize()-1; wordCnt++){
 		for(int wordCnt=0;wordCnt < it->getSize()-1; wordCnt++){
 			wptr=it->getWord(wordCnt+1);
@@ -163,7 +165,7 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 			_learningRate=(_learningRate<1e-6)?1e-6:_learningRate*alpha;
 			cout<<"current time: "<<(float)(clock()-t)/(float)CLOCKS_PER_SEC<<endl;
 		}
-
+		}
 		}//test by hui
 	}
 	cout << "Finished training for " << num << " iterations.\n";
@@ -428,6 +430,7 @@ void calError(mat& errout,const mat& fin,Transforms* act,Transforms* nex,const m
 
 float RNN::calAcc(){
 	string prePath("./model/predict.csv");
+	//string ansPath("/home/hui/project/rnnFeat/answer.txt");
 	string ansPath("/home/ahpan/Data/answer.txt");
 	ifstream pre(prePath.c_str());
 	ifstream ans(ansPath.c_str());
