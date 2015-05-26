@@ -66,6 +66,9 @@ class Dataset{
 	void   resetTestSentCtr()  {_testSentCtr = 0;}
 	Sentence getSentence();
 	Sentence getTrainSent();
+	// test get batch by hui
+	vector<Sentence>* getTrainSentALL(){vector<Sentence>* vptr=&_data;return vptr;}
+	//
 	Sentence getValidSent();
 	Sentence getTestSent();
 	size_t getSentCtr() {return _sentCtr;}

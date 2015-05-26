@@ -21,7 +21,7 @@ typedef host_matrix<float> mat;
 float computeErrRate(const vector<size_t>& ans, const vector<size_t>& output);
 void computeLabel(vector<size_t>& result,const mat& outputMat);
 void calError(mat& errout,const mat& fin,Transforms* act,Transforms* nex,const mat& delta);
-
+void readAns(string str,vector<char>& ans);
 
 RNN::RNN():_learningRate(0.001),_momentum(0), _method(ALL){}
 RNN::RNN(float learningRate, float momentum,float reg, float variance,Init init, const vector<size_t>& v, Method method, int step, Dataset& data):_learningRate(learningRate), _momentum(momentum),_reg(reg), _method(method){
@@ -92,7 +92,7 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 	float minEout = Eout;
 	float maxAcc =0;
 	size_t oneEpoch = data.getTrainSentNum();
-	size_t epochCnt = 0;
+	size_t epochCnt = 1;
 	size_t num = 0;
 	clock_t t=clock();
 	vector<mat> fin;
@@ -100,27 +100,44 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 	vector<int> wordClassLabel;
 	vector<mat> ans(2);
 	Sentence crtSent;
+	string ansPath("/home/ahpan/Data/answer.txt");
+	vector<char> gndAns;
+	readAns(ansPath,gndAns);	
+	//test by hui
+	vector<Sentence>* dataSetPtr=data.getTrainSentALL();
+	vector<Sentence>::iterator it;
 	cout<<"---------------------"<<endl;
 	cout<<"-   begin training  -"<<endl;
 	cout<<"---------------------"<<endl;
-	cout<<"maxEpoch: "<<maxEpoch<<endl;
-	cout<<"---------------------"<<endl;
-	for(; epochCnt < maxEpoch; ){   // increment by sentence
-		crtSent = data.getTrainSent();
+	for(; epochCnt;epochCnt++ ){   // increment by sentence
+		cout<<"EPOCH: "<<epochCnt<<" best acc:"<<maxAcc<<endl;
+		//crtSent = data.getTrainSent();
+		//test by hui
+		for(it=dataSetPtr->begin();it!=dataSetPtr->end();++it){
 		fin.clear();
 		forwardSet.clear();
 		wordClassLabel.clear();
 		// push back first word
 		num++;
-		for (int wordCnt = 0; wordCnt < crtSent.getSize()-1; wordCnt++){
-			int nextLabel = crtSent.getWord(wordCnt+1)->getClassLabel();
-			int tmpLabel = crtSent.getWord(wordCnt)->getClassLabel();
+		Word* wptr;
+		Word* wptrp=(it->getSize()>0)? it->getWord(0):NULL;
+		//for (int wordCnt = 0; wordCnt < crtSent.getSize()-1; wordCnt++){
+		for(int wordCnt=0;wordCnt < it->getSize()-1; wordCnt++){
+			wptr=it->getWord(wordCnt+1);
+			//int nextLabel = crtSent.getWord(wordCnt+1)->getClassLabel();
+			//int tmpLabel = crtSent.getWord(wordCnt)->getClassLabel();
+			//wordClassLabel.push_back(nextLabel);
+			//feedForward(crtSent.getWord(wordCnt)->getMatFeature(), fin, nextLabel);
+			int nextLabel=wptr->getClassLabel();
 			wordClassLabel.push_back(nextLabel);
-			feedForward(crtSent.getWord(wordCnt)->getMatFeature(), fin, nextLabel);
+			feedForward(wptrp->getMatFeature(),fin,nextLabel);
 			// store all forward output 
-			ans[0]=crtSent.getWord(wordCnt+1)->getClassOutput(data);
-			ans[1]=crtSent.getWord(wordCnt+1)->getWordOutput(data);
+			//ans[0]=crtSent.getWord(wordCnt+1)->getClassOutput(data);
+			ans[0]=wptr->getClassOutput(data);
+			//ans[1]=crtSent.getWord(wordCnt+1)->getWordOutput(data);
+			ans[1]=wptr->getWordOutput(data);
 			forwardSet.push_back(pair<vector<mat>,vector<mat>>(fin,ans));
+			wptrp=wptr;
 		}
 		backPropagate(forwardSet, wordClassLabel);
 		//reset
@@ -146,6 +163,8 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 			_learningRate=(_learningRate<1e-6)?1e-6:_learningRate*alpha;
 			cout<<"current time: "<<(float)(clock()-t)/(float)CLOCKS_PER_SEC<<endl;
 		}
+
+		}//test by hui
 	}
 	cout << "Finished training for " << num << " iterations.\n";
 }
@@ -425,4 +444,14 @@ float RNN::calAcc(){
 	pre.close();
 	ans.close();
 	return acc/(float)1040;
+}
+
+void readAns(string str,vector<char>& ans){
+	ifstream fin(str.c_str());
+	if(!fin){return;}
+	string s;
+	getline(fin,s);
+	for(;getline(fin,s);){
+		ans.push_back(s[s.find(",")+1]);
+	}
 }
