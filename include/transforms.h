@@ -113,11 +113,12 @@ class Recursive : public Transforms{
 				_counter=0;
 				}
 	int getStep()const {return _step;}
-	
+	void forwardFirst(mat& out,mat* in);
 	private:
 		void bptt(mat& gra,float rate,float regularization,float momentum);
 		vector<mat> _history;
-		vector<mat> _input;
+		//vector<mat> _input;
+		vector<mat*> _input;
 		int _step;
 		mat _h;
 		mat _pwh;

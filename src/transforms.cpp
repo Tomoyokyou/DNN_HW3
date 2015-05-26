@@ -159,11 +159,15 @@ Recursive::Recursive(size_t inputdim,size_t outputdim,myNnGen& ran,int step): Tr
 	_pwh.resize(_h.getRows(),_h.getCols(),0);
 }
 void Recursive::forward(mat& out,const mat& in){
-	_input.push_back(in);	
+	//_input.push_back(in);	
 	out=sigmoid(_w*in+_h*_history.back());
 	_history.push_back(out);
 }
-
+void Recursive::forwardFirst(mat& out,mat* in){
+	_input.push_back(in);
+	out=sigmoid(_w*(*in)+_h*_history.back());
+	_history.push_back(out);
+}
 void Recursive::backPropagate(const mat& fin,const mat& delta,float rate,float regularization,float momentum){
 	mat gra=delta;
 	bptt(gra,rate,regularization,momentum);
@@ -186,7 +190,7 @@ void Recursive::bptt(mat& gra,float rate,float regularization,float momentum){
 	int iidx=_input.size()-1,hidx=_history.size()-2;
 	if(iidx>=0&&hidx>=0){
 	for(int count=0;count<_step;count++){
-		_pw=gra*~_input[iidx]+_pw*momentum;
+		_pw=gra*~(*_input[iidx])+_pw*momentum;
 		_pwh=gra*~_history[hidx]+_pwh*momentum;
 		_wmem+= _pw;
 		_hmem+= _pwh;

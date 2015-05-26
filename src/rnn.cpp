@@ -130,7 +130,7 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 			//feedForward(crtSent.getWord(wordCnt)->getMatFeature(), fin, nextLabel);
 			int nextLabel=wptr->getClassLabel();
 			wordClassLabel.push_back(nextLabel);
-			feedForward((*wptrp->getMatPtr()),fin,nextLabel);
+			feedForward(wptrp->getMatPtr(),fin,nextLabel);
 			// store all forward output 
 			//ans[0]=crtSent.getWord(wordCnt+1)->getClassOutput(data);
 			ans[0]=wptr->getClassOutput(data);
@@ -196,8 +196,9 @@ void RNN::predict(Dataset& testData, const string& outName = "./model/testOutput
 				int currentClass = testSent.getWord(k)->getClassLabel();
 				int nextClass = testSent.getWord(k+1)->getClassLabel();
 
-				mat testInput = testSent.getWord(k)->getMatFeature();
-				feedForward(testInput, fin, nextClass);
+				//mat testInput = testSent.getWord(k)->getMatFeature();
+				//feedForward(testInput, fin, nextClass);
+				feedForward(testSent.getWord(k)->getMatPtr(),fin,nextClass);
 
 				MatrixXf* wordtmp = fin.back().getData();
 				MatrixXf* classtmp = fin[fin.size()-2].getData();
@@ -342,11 +343,12 @@ bool RNN::load(const string& fn){
 	return true;
 }
 
-void RNN::feedForward(const mat& inputMat,vector<mat>& fout, int classLabel){
+void RNN::feedForward(mat* inputMat,vector<mat>& fout, int classLabel){
 	//mat tempInputMat = inputMat;
 	fout.resize(_transforms.size()+2);//
-	fout[0]=inputMat;
-	_transforms.at(0)->forward(fout[1],fout[0]);
+	fout[0]=*inputMat;
+	//_transforms.at(0)->forward(fout[1],fout[0]);
+	((Recursive*)_transforms.at(0))->forwardFirst(fout[1],inputMat);
 	for(size_t i = 1; i < _transforms.size(); i++){
 		(_transforms.at(i))->forward(fout[i+1],fout[i] );
 	}
@@ -426,7 +428,7 @@ void calError(mat& errout,const mat& fin,Transforms* act,Transforms* nex,const m
 
 float RNN::calAcc(){
 	string prePath("./model/predict.csv");
-	string ansPath("/home/hui/project/rnnFeat/answer.txt");
+	string ansPath("/home/ahpan/Data/answer.txt");
 	ifstream pre(prePath.c_str());
 	ifstream ans(ansPath.c_str());
 	if (!pre) cout <<"can't open pre file\n";
