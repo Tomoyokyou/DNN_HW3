@@ -253,7 +253,8 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 				}
 			}
 			*/
-			cout << "Validate Acc: " << (float)numAcc/totalCount << endl;
+			temp = (float)numAcc/totalCount;
+			cout << "Validate Acc: " << temp << endl;
 			
 /*
 			vector<char> pred;
