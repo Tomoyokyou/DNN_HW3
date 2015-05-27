@@ -73,6 +73,7 @@ class Dataset{
 	
 	size_t getSentenceNum() {return _data.size(); }
 	size_t getFeatureDim() {return _featureDim; }
+	size_t getClassNum() {return _classCount.size();}
 	size_t getWordNum() {return _wordNum;}	
 	void   resetSentCtr() {_sentCtr = 0;}
 	void   resetTrainSentCtr() {_trainSentCtr = 0;}

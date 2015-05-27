@@ -169,20 +169,63 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 		}
 		if (num % 20000 == 0){
 			cout<<"Iter: "<<num<<endl;
+			/*Validation*/
+			
+			data.resetValidSentCtr();
+			vector<mat> fin;
+			size_t numValid = data.getValidSentNum();
+			size_t totalCount = numValid;
+
+			//cout << "Num of valid: " << numValid << endl;
+
+			size_t numAcc = 0;
+			for(int j = 0; j < numValid; j++){
+				Sentence validSent = data.getValidSent();
+				if(validSent.getSize() == 0){
+					totalCount--;
+					continue;
+				}
+					
+
+				size_t blank = rand() % validSent.getSize();
+				//cout << "Position of blank: " << blank << endl;
+
+				if(blank < 2){
+					totalCount--;
+					continue;
+				}
+
+				fin.clear();
+				
+				for (int k = 0; k < blank-1; k++){
+					int nextClass = validSent.getWord(k+1)->getClassLabel();
+					feedForwardOut(validSent.getWord(k)->getMatPtr(),fin,nextClass);
+					if(k == blank-2 && blank >= 2){
+						MatrixXf* classtmp = fin[fin.size()-2].getData();
+						MatrixXf::Index maxRow, maxCol;
+						float max = classtmp->maxCoeff(&maxRow, &maxCol);
+						if(maxRow == nextClass)
+							numAcc++;
+					}
+				}
+			}
+			cout << "Validate Acc: " << (float)numAcc/totalCount << endl;
+			
+			
 			vector<char> pred;
 			readPredict(data, pred);
 			float temp = 0;
-			for (int i = 0; i < pred.size(); i++)
-				if (pred[i] == ans[i])
-					temp++;
+			for (int k = 0; k < pred.size(); k ++)
+				if (pred[k] == ans[k])
+					temp ++;
 			temp /= (float)1040;
-			cout << "acc is "<<temp<<endl;
+			cout << "acc is " << temp << endl;
 			if(maxAcc<temp){
 				maxAcc=temp;
 				if(maxAcc>0.4){
 					string modelpath="./model/acc_";
 					stringstream s;
-					s<<modelpath<<(int)(maxAcc*100)<<".mdl";
+					s<<modelpath<<(int)(maxAcc*1000/(int)10)<<".mdl";
 					save(s.str());
 					}
 			}
