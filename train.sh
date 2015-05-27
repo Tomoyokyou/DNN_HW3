@@ -1,4 +1,4 @@
-FEATUREDIR=/home/ahpan/DNN_HW3/model/preprocess_3/
+FEATUREDIR=/home/ahpan/DNN_HW3/model/preprocess_3/                                                                                                        
 ANSDIR=/home/ahpan/Data/
 #FEATUREDIR=/home/hui/project/rnnFeat/
 #ANSDIR=/home/hui/project/rnnFeat/
@@ -9,7 +9,7 @@ TESTFILE=${FEATUREDIR}testing_data_parse2.txt
 #ANSWERFILE=${ANSDIR}answer.txt
 RATE=0.01
 MOMENTUM=0
-EPOCH=50
+EPOCH=1
 DECAY=0.99
 VAR=0.2
 STEP=5

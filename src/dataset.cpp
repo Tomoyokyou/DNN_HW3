@@ -230,7 +230,7 @@ Sentence Dataset::getTrainSent() {
 //
 void Dataset::getAllTrainSent(vector<Sentence>& out){
 	for(size_t t=0;t<_trainLabel.size();++t){
-		if(_data[_trainLabel[t]].getSize()>1)
+		if(_data[_trainLabel[t]].getSize()>2)
 		out.push_back(_data[_trainLabel[t]]);
 	}
 }
@@ -240,7 +240,7 @@ void Dataset::getAllTestSent(vector<Sentence>& out){
 
 void Dataset::getAllValidSent(vector<Sentence>& out){
 	for(size_t t=0;t<_validLabel.size();++t){
-		if(_data[_validLabel[t]].getSize()>1)
+		if(_data[_validLabel[t]].getSize()>2)
 		out.push_back(_data[_validLabel[t]]);
 	}
 }
