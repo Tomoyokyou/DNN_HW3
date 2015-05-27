@@ -7,5 +7,16 @@ SENTENCEFILE=${FEATUREDIR}training_oov.txt
 CLASSFILE=${FEATUREDIR}classes.sorted.txt
 TESTFILE=${FEATUREDIR}testing_data_parse2.txt
 ANSWERFILE=${ANSDIR}answer.txt
+RATE=0.01
+MOMENTUM=0
+EPOCH=50
+DECAY=0.99
+VAR=0.2
+STEP=5
+HIDDEN=50
+REG=0
+OUT=./model/out.mdl
 
-./bin/train.app  ${FEATUREFILE} ${SENTENCEFILE} ${CLASSFILE} ${TESTFILE}
+./bin/train.app  ${FEATUREFILE} ${SENTENCEFILE} ${CLASSFILE} ${TESTFILE} --ans ${ANSWERFILE} --rate ${RATE} \
+--momentum ${MOMENTUM} --epoch ${EPOCH} --decay ${DECAY} --var ${VAR} --step ${STEP} --reg ${REG} \
+ --hidden ${HIDDEN} --outF ${OUT} 
