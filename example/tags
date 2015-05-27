@@ -143,6 +143,7 @@ _hmem	../include/transforms.h	/^		mat _hmem;$/;"	m	class:Recursive
 _i	../include/transforms.h	/^		mat _i;$/;"	m	class:Transforms
 _index	../include/dataset.h	/^		int _index; \/\/ index inside label$/;"	m	class:Word
 _index	../include/dataset.h	/^		int _index; \/\/ self index, from 0 ~ _wordNum$/;"	m	class:Word
+_input	../include/transforms.h	/^		vector<mat> _input;$/;"	m	class:Recursive
 _inputPtr	../include/transforms.h	/^		vector<mat*> _inputPtr;$/;"	m	class:Recursive
 _isLabeled	../include/dataset.h	/^	bool _isLabeled;$/;"	m	class:Dataset
 _label	../include/dataset.h	/^	int* _label; \/\/ output phoneme changed to integer$/;"	m	class:Dataset
@@ -210,6 +211,7 @@ backPropagate	../src/transforms.cpp	/^void Softmax::backPropagate(mat& out,const
 bptt	../src/transforms.cpp	/^void Recursive::bptt(const mat& delta,float rate,float regularization){$/;"	f	class:Recursive
 bptt	../src/transforms.cpp	/^void Recursive::bptt(mat& gra,float rate,float regularization,float momentum){$/;"	f	class:Recursive
 calAcc	../src/rnn.cpp	/^float RNN::calAcc(){$/;"	f	class:RNN
+calAcc	../src/rnn.cpp	/^float RNN::calAcc(string prePath,string ansPath){$/;"	f	class:RNN
 calError	../src/dnn.cpp	/^void calError(mat& errout,const mat& fin,Transforms* act,const mat& delta){$/;"	f
 calError	../src/rnn.cpp	/^void calError(mat& errout,const mat& fin,Transforms* act,Transforms* nex,const mat& delta){$/;"	f
 calError	../src/rnn.cpp	/^void calError(mat& errout,const mat& fin,Transforms* act,const mat& delta){$/;"	f

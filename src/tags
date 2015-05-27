@@ -3,27 +3,27 @@
 !_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
-!_TAG_PROGRAM_VERSION	5.8	//
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
 ACT	../include/transforms.h	/^enum ACT{$/;"	g
 ALL	../include/dnn.h	/^	ALL, $/;"	e	enum:Method
 ALL	../include/rnn.h	/^	ALL, $/;"	e	enum:Method
 BATCH	../include/dnn.h	/^	BATCH, $/;"	e	enum:Method
 BATCH	../include/rnn.h	/^	BATCH, $/;"	e	enum:Method
-DATASET_H_	../include/dataset.h	/^#define DATASET_H_$/;"	d
+DATASET_H_	../include/dataset.h	2;"	d
 DNN	../include/dnn.h	/^class DNN{$/;"	c
-DNN_H	../include/dnn.h	/^#define DNN_H$/;"	d
+DNN_H	../include/dnn.h	2;"	d
 Dataset	../include/dataset.h	/^class Dataset{$/;"	c
 Dataset	./dataset.cpp	/^Dataset::Dataset(){$/;"	f	class:Dataset
 Dataset	./dataset.cpp	/^Dataset::Dataset(const Dataset& d){$/;"	f	class:Dataset
 Dataset	./dataset.cpp	/^Dataset::Dataset(const char* featurePath, const char* classPath, const char* sntPath, int cutClass){$/;"	f	class:Dataset
 ERROR	../include/parser.h	/^        ERROR,$/;"	e	enum:TYPE
-HOST_MATRIX_H	../include/host_matrix.h	/^#define HOST_MATRIX_H$/;"	d
+HOST_MATRIX_H	../include/host_matrix.h	2;"	d
 Init	../include/dnn.h	/^enum Init{$/;"	g
 Init	../include/rnn.h	/^enum Init{$/;"	g
-MAX_EPOCH	./rnn.cpp	/^#define MAX_EPOCH /;"	d	file:
+MAX_EPOCH	./rnn.cpp	15;"	d	file:
 MUST	../include/parser.h	/^        MUST,$/;"	e	enum:TYPE
 MUSTNUM	../include/parser.h	/^        MUSTNUM,$/;"	e	enum:TYPE
-MYNNGEN_H	../include/mynngen.h	/^#define MYNNGEN_H$/;"	d
+MYNNGEN_H	../include/mynngen.h	2;"	d
 Method	../include/dnn.h	/^enum Method{$/;"	g
 Method	../include/rnn.h	/^enum Method{$/;"	g
 NONE	../include/parser.h	/^        NONE,$/;"	e	enum:TYPE
@@ -36,14 +36,14 @@ OPTIONNUM	../include/parser.h	/^        OPTIONNUM,$/;"	e	enum:TYPE
 PARSER	../include/parser.h	/^class PARSER{$/;"	c
 PARSER	./parser.cpp	/^PARSER::PARSER(){$/;"	f	class:PARSER
 PARSER	./parser.cpp	/^PARSER::PARSER(const PARSER& p){$/;"	f	class:PARSER
-PARSER_H	../include/parser.h	/^#define PARSER_H$/;"	d
+PARSER_H	../include/parser.h	2;"	d
 RBM	../include/dnn.h	/^	RBM,$/;"	e	enum:Init
 RBM	../include/rnn.h	/^	RBM,$/;"	e	enum:Init
 RECURSIVE	../include/transforms.h	/^	RECURSIVE$/;"	e	enum:ACT
 RNN	../include/rnn.h	/^class RNN{$/;"	c
 RNN	./rnn.cpp	/^RNN::RNN():_learningRate(0.001),_momentum(0), _method(ALL){}$/;"	f	class:RNN
 RNN	./rnn.cpp	/^RNN::RNN(float learningRate, float momentum,float reg, float variance,Init init, const vector<size_t>& v, Method method, int step, Dataset& data):_learningRate(learningRate), _momentum(momentum),_reg(reg), _method(method){$/;"	f	class:RNN
-RNN_H	../include/rnn.h	/^#define RNN_H$/;"	d
+RNN_H	../include/rnn.h	2;"	d
 Recursive	../include/transforms.h	/^class Recursive : public Transforms{$/;"	c
 Recursive	./transforms.cpp	/^Recursive::Recursive(const Recursive& s): Transforms(s),_step(s._step),_h(s._h){	$/;"	f	class:Recursive
 Recursive	./transforms.cpp	/^Recursive::Recursive(const mat& w,const mat& h,int step): Transforms(w),_step(step),_h(h){$/;"	f	class:Recursive
@@ -63,7 +63,7 @@ Softmax	./transforms.cpp	/^Softmax::Softmax(const Softmax& s): Transforms(s){$/;
 Softmax	./transforms.cpp	/^Softmax::Softmax(const mat& w):Transforms(w){$/;"	f	class:Softmax
 Softmax	./transforms.cpp	/^Softmax::Softmax(size_t inputdim,size_t outputdim,float range): Transforms(inputdim,outputdim,range){$/;"	f	class:Softmax
 Softmax	./transforms.cpp	/^Softmax::Softmax(size_t inputdim,size_t outputdim,myNnGen& ran): Transforms(inputdim,outputdim,ran){$/;"	f	class:Softmax
-TRANSFORMS_H	../include/transforms.h	/^#define TRANSFORMS_H$/;"	d
+TRANSFORMS_H	../include/transforms.h	2;"	d
 TYPE	../include/parser.h	/^enum TYPE{$/;"	g
 Transforms	../include/transforms.h	/^class Transforms{$/;"	c
 Transforms	./transforms.cpp	/^Transforms::Transforms(const Transforms& t):_w(t._w){$/;"	f	class:Transforms
@@ -74,7 +74,7 @@ Transpose	../include/host_matrix.h	/^		Transpose(const host_matrix<T>& m): _m(m)
 Transpose	../include/host_matrix.h	/^	class Transpose {$/;"	c	class:host_matrix
 UNIFORM	../include/dnn.h	/^	UNIFORM,$/;"	e	enum:Init
 UNIFORM	../include/rnn.h	/^	UNIFORM,$/;"	e	enum:Init
-UTIL_H	../include/util.h	/^#define UTIL_H$/;"	d
+UTIL_H	../include/util.h	2;"	d
 Word	../include/dataset.h	/^		Word() : _classLabel(-1), _index(0) {}$/;"	f	class:Word
 Word	../include/dataset.h	/^		Word(int clabel, int index, mat feature):$/;"	f	class:Word
 Word	../include/dataset.h	/^class Word{$/;"	c
@@ -94,7 +94,7 @@ _h	../include/transforms.h	/^		mat _h;$/;"	m	class:Recursive
 _history	../include/transforms.h	/^		vector<mat> _history;$/;"	m	class:Recursive
 _hmem	../include/transforms.h	/^		mat _hmem;$/;"	m	class:Recursive
 _index	../include/dataset.h	/^		int _index; \/\/ index inside label$/;"	m	class:Word
-_inputPtr	../include/transforms.h	/^		vector<mat*> _inputPtr;$/;"	m	class:Recursive
+_input	../include/transforms.h	/^		vector<mat> _input;$/;"	m	class:Recursive
 _learningRate	../include/dnn.h	/^	float _learningRate;$/;"	m	class:DNN
 _learningRate	../include/rnn.h	/^	float _learningRate;$/;"	m	class:RNN
 _m	../include/host_matrix.h	/^		const host_matrix<T> _m;$/;"	m	class:host_matrix::Transpose
@@ -141,7 +141,7 @@ backPropagate	./transforms.cpp	/^void Recursive::backPropagate(const mat& fin,co
 backPropagate	./transforms.cpp	/^void Sigmoid::backPropagate(const mat& fin,const mat& delta, float rate,float regularization,float momentum){$/;"	f	class:Sigmoid
 backPropagate	./transforms.cpp	/^void Softmax::backPropagate(const mat& fin,const mat& delta,float rate, float regularization,float momentum){$/;"	f	class:Softmax
 bptt	./transforms.cpp	/^void Recursive::bptt(mat& gra,float rate,float regularization,float momentum){$/;"	f	class:Recursive
-calAcc	./rnn.cpp	/^float RNN::calAcc(){$/;"	f	class:RNN
+calAcc	./rnn.cpp	/^float RNN::calAcc(string prePath,string ansPath){$/;"	f	class:RNN
 calError	./rnn.cpp	/^void calError(mat& errout,const mat& fin,Transforms* act,Transforms* nex,const mat& delta){$/;"	f
 classoutput	../include/dataset.h	/^		mat classoutput;$/;"	m	class:Word
 computeErrRate	./rnn.cpp	/^float computeErrRate(const vector<size_t>& ans, const vector<size_t>& output){$/;"	f
