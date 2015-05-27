@@ -159,13 +159,13 @@ Recursive::Recursive(size_t inputdim,size_t outputdim,myNnGen& ran,int step): Tr
 	_pwh.resize(_h.getRows(),_h.getCols(),0);
 }
 void Recursive::forward(mat& out,const mat& in){
-	//_input.push_back(in);	
+	_input.push_back(in);	
 	out=sigmoid(_w*in+_h*_history.back());
 	_history.push_back(out);
 }
 //
 void Recursive::forwardFirst(mat& out,mat* in){
-	_inputPtr.push_back(in);
+	//_inputPtr.push_back(in);
 	out=sigmoid(_w*(*in)+_h*_history.back());
 	_history.push_back(out);
 }
@@ -190,13 +190,13 @@ void Recursive::write(ofstream& out){
 }
 
 void Recursive::bptt(mat& gra,float rate,float regularization,float momentum){
-	//int iidx=_input.size()-1;
-	int iidx=_inputPtr.size()-1;
+	int iidx=_input.size()-1;
+	//int iidx=_inputPtr.size()-1;
 	int hidx=_history.size()-2;
 	if(iidx>=0&&hidx>=0){
 	for(int count=0;count<_step;count++){
-		//_pw=gra*~_input[iidx]+_pw*momentum;
-		_pw=gra*~(*_inputPtr[iidx])+_pw*momentum;
+		_pw=gra*~_input[iidx]+_pw*momentum;
+		//_pw=gra*~(*_inputPtr[iidx])+_pw*momentum;
 		_pwh=gra*~_history[hidx]+_pwh*momentum;
 		_wmem+= _pw;
 		_hmem+= _pwh;
@@ -206,9 +206,9 @@ void Recursive::bptt(mat& gra,float rate,float regularization,float momentum){
 			break;
 		gra=_history.at(hidx+1)&((float)1.0-_history.at(hidx+1))&(~_h * gra);	
 	}
-	//_input.pop_back();
+	_input.pop_back();
 	_history.pop_back();
-	_inputPtr.pop_back();//
+	//_inputPtr.pop_back();//
 	}
 	else{cout<<"no input/history to update recursive weight\n";}
 }

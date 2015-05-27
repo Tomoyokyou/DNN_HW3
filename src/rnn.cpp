@@ -448,9 +448,10 @@ void RNN::feedForward(const vector<Word*>& words,vector<pair<vector<mat>,vector<
 		wp2=words[t+1];
 		classout.push_back(wp2->getClassLabel());
 		fout[0]=*(wp1->getMatPtr());
-		((Recursive*)_transforms[0])->forwardFirst(fout[1],wp1->getMatPtr());
-		for(size_t k=1;k<_transforms.size();++k)
-			(_transforms[k])->forward(fout[k+1],fout[k]);
+			_transforms[0]->forward(fout[1],fout[0]);
+		for(size_t k=1;k<_transforms.size();++k){
+			_transforms[k]->forward(fout[k+1],fout[k]);
+		}
 		_outSoftmax[classout[t]]->forward(fout[_transforms.size()+1],fout[_transforms.size()-1]);
 		//ans[0]=wp2->getClassOutput(data);
 		//ans[1]=wp2->getWordOutput(data);
@@ -459,18 +460,6 @@ void RNN::feedForward(const vector<Word*>& words,vector<pair<vector<mat>,vector<
 		out.push_back(pair<vector<mat>,vector<mat*>>(fout,ans));
 	}
 
-	/*
-	//mat tempInputMat = inputMat;
-	fout.resize(_transforms.size()+2);//
-	//fout[0]=inputMat;
-	fout[0]=*inputMat;
-	//_transforms.at(0)->forward(fout[1],fout[0]);
-	((Recursive*)_transforms.at(0))->forwardFirst(fout[1],inputMat);//
-	for(size_t i = 1; i < _transforms.size(); i++){
-		(_transforms.at(i))->forward(fout[i+1],fout[i] );
-	}
-	_outSoftmax[classLabel]->forward(fout[_transforms.size()+1], fout[_transforms.size()-1]);
-	*/
 }
 
 void RNN::feedForwardOut(mat* inputMat,vector<mat>& fout,int classLabel){
@@ -479,9 +468,9 @@ void RNN::feedForwardOut(mat* inputMat,vector<mat>& fout,int classLabel){
 	//fout[0]=inputMat;
 	fout[0]=*inputMat;
 	//_transforms.at(0)->forward(fout[1],fout[0]);
-	((Recursive*)_transforms.at(0))->forwardFirst(fout[1],inputMat);//
+	_transforms[0]->forward(fout[1],fout[0]);
 	for(size_t i = 1; i < _transforms.size(); i++){
-		(_transforms.at(i))->forward(fout[i+1],fout[i] );
+		_transforms.at(i)->forward(fout[i+1],fout[i]);
 	}
 	_outSoftmax[classLabel]->forward(fout[_transforms.size()+1], fout[_transforms.size()-1]);
 }
@@ -557,10 +546,10 @@ void calError(mat& errout,const mat& fin,Transforms* act,Transforms* nex,const m
 	}
 }
 
-float RNN::calAcc(){
-	string prePath("./model/predict.csv");
+float RNN::calAcc(string prePath,string ansPath){
+	//string prePath("./model/predict.csv");
 	//string ansPath("/home/hui/project/rnnFeat/answer.txt");
-	string ansPath("/home/ahpan/Data/answer.txt");
+	//string ansPath("/home/ahpan/Data/answer.txt");
 	ifstream pre(prePath.c_str());
 	ifstream ans(ansPath.c_str());
 	if (!pre) cout <<"can't open pre file\n";
