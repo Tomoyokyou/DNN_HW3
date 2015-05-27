@@ -3,7 +3,7 @@ CXX=g++
 CPPFLAGS=  -O3 -std=c++11
 EIGENDIR=/usr/local/include/eigen3/
 
-EXECUTABLES=train #predict
+EXECUTABLES=train calAcc#predict
 HEADEROBJ=obj/util.o obj/transforms.o obj/rnn.o obj/dataset.o obj/parser.o
 
 LIBS=#$(LIBCUMATDIR)lib/libcumatrix.a
@@ -33,21 +33,21 @@ DIR:
 	@mkdir -p obj
 	@mkdir -p bin
 
-larry:$(HEADEROBJ) example/testLoadModel.cpp
-	@echo "compiling testLoadModel.cpp"
-	@$(CXX) $(CPPFLAGS) $(INCLUDE) -o bin/$@.app $^ $(LIBS) $(LIBRARY) $(LD_LIBRARY)
+#larry:$(HEADEROBJ) example/testLoadModel.cpp
+#	@echo "compiling testLoadModel.cpp"
+#	@$(CXX) $(CPPFLAGS) $(INCLUDE) -o bin/$@.app $^ $(LIBS) $(LIBRARY) $(LD_LIBRARY)
 
 train:$(HEADEROBJ) example/rnnTrain.cpp
 	@echo "compiling train.app for DNN Training"
 	@$(CXX) $(CPPFLAGS) $(INCLUDE) -o bin/$@.app $^ $(LIBS) $(LIBRARY) $(LD_LIBRARY)
 
-predict:$(HEADEROBJ) example/predict.cpp
-	@echo "compiling predict.app for DNN Testing"
-	@$(CXX) $(CPPFLAGS) $(INCLUDE) -o bin/$@.app $^ $(LIBS) $(LIBRARY) $(LD_LIBRARY)
+#predict:$(HEADEROBJ) example/predict.cpp
+#	@echo "compiling predict.app for DNN Testing"
+#	@$(CXX) $(CPPFLAGS) $(INCLUDE) -o bin/$@.app $^ $(LIBS) $(LIBRARY) $(LD_LIBRARY)
 
-jason:$(HEADEROBJ) example/dataTest.cpp
-	@echo "compiling dataTest.app for Dataset Testing"
-	@$(CXX) $(CPPFLAGS) $(INCLUDE) -o bin/$@.app $^ $(LIBS) $(LIBRARY) $(LD_LIBRARY)
+#jason:$(HEADEROBJ) example/dataTest.cpp
+#	@echo "compiling dataTest.app for Dataset Testing"
+#	@$(CXX) $(CPPFLAGS) $(INCLUDE) -o bin/$@.app $^ $(LIBS) $(LIBRARY) $(LD_LIBRARY)
 calAcc: example/calAcc.cpp
 	$(CXX) ${CPPFLAGS} -o bin/calAcc.app $^
 clean:
