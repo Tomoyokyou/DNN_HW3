@@ -1,48 +1,33 @@
 CC=gcc
 CXX=g++
 CPPFLAGS=  -O3 -std=c++11
-NVCC=nvcc -arch=sm_21 -w
-CUDA_DIR=/usr/local/cuda/
 EIGENDIR=/usr/local/include/eigen3/
 
 EXECUTABLES=train #predict
-LIBCUMATDIR=tool/libcumatrix/
-CUMATOBJ=$(LIBCUMATDIR)obj/device_matrix.o $(LIBCUMATDIR)obj/cuda_memory_manager.o
 HEADEROBJ=obj/util.o obj/transforms.o obj/rnn.o obj/dataset.o obj/parser.o
 
-LIBS=$(LIBCUMATDIR)lib/libcumatrix.a
+LIBS=#$(LIBCUMATDIR)lib/libcumatrix.a
 # +==============================+
 # +======== Phony Rules =========+
 # +==============================+
 
 .PHONY: debug all clean 
 
-all:DIR TOOL $(HEADEROBJ) $(EXECUTABLES)
+all:DIR $(HEADEROBJ) $(EXECUTABLES)
 
 debug:CPPFLAGS+=-g -DDEBUG
 
 
 vpath %.h include/
 vpath %.cpp src/
-vpath %.cu src/
+#vpath %.cu src/
 
 INCLUDE= -I include/\
-	 -I $(LIBCUMATDIR)include/\
-	 -I $(CUDA_DIR)include/\
-	 -I $(CUDA_DIR)samples/common/inc/\
 	 -I $(EIGENDIR)
 
-LD_LIBRARY=-L$(CUDA_DIR)lib64 -L$(LIBCUMATDIR)lib
-LIBRARY=-lcuda -lcublas -lcudart -lcumatrix
+LD_LIBRARY=#-L$(CUDA_DIR)lib64 -L$(LIBCUMATDIR)lib
+LIBRARY=#-lcuda -lcublas -lcudart -lcumatrix
 
-TOOL:
-	@echo "Checking library file in tool/libcumatrix"
-	@if test -f $(LIBS); then \
-		echo "Library file found"; \
-	else \
-		echo "Missing library file...regenerating"; \
-		cd tool/libcumatrix/ ;  make ; cd ../.. ; \
-	fi
 DIR:
 	@echo "checking object and executable directory..."
 	@mkdir -p obj
@@ -90,6 +75,3 @@ obj/%.o: src/%.cpp include/%.h
 	@echo "compiling OBJ: $@ " 
 	@$(CXX) $(CPPFLAGS) $(INCLUDE) -o $@ -c $<
 
-obj/%.o: %.cu
-	@echo "compiling OBJ: $@ "
-	@$(NVCC) $(NVCCFLAGS) $(CPPFLAGS) $(INCLUDE) -o $@ -c $<
