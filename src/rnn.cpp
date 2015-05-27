@@ -173,13 +173,13 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 			
 			data.resetValidSentCtr();
 			vector<mat> fin;
-			size_t numValid = data.getValidSentNum();
-			size_t totalCount = numValid;
+			//size_t numValid = data.getValidSentNum();
+			size_t totalCount = 10000;
 
 			//cout << "Num of valid: " << numValid << endl;
 
 			size_t numAcc = 0;
-			for(int j = 0; j < numValid; j++){
+			for(int j = 0; j < 10000; j++){
 				Sentence validSent = data.getValidSent();
 				if(validSent.getSize() == 0){
 					totalCount--;
@@ -385,7 +385,7 @@ bool RNN::load(const string& fn){
 	if(!ifs){return false;}
 	else{
 		bool isOutSoftmax = false;
-		while(ifs.getline(buf, sizeof(buf)) != 0 ){
+		while(ifs.getline(buf, sizeof(buf))){
 			string tempStr(buf);
 			size_t found = tempStr.find_first_of(">");
 			size_t typeBegin = tempStr.find_first_of("<") + 1;
@@ -404,7 +404,7 @@ bool RNN::load(const string& fn){
 				size_t totalEle = rowNum * colNum;
 				float* h_data = new float[totalEle];
 				for(size_t i = 0; i < rowNum; i++){
-					if(ifs.getline(buf, sizeof(buf)) == 0){
+					if(!ifs.getline(buf, sizeof(buf))){
 						cerr << "Wrong file format!\n";
 					}
 					tempStr.assign(buf);
@@ -428,7 +428,7 @@ bool RNN::load(const string& fn){
 					totalEle = rowNum * colNum;
 					float* h_data_mem = new float[totalEle];
 					for(size_t i = 0; i < rowNum; i++){
-						if(ifs.getline(buf, sizeof(buf)) == 0){
+						if(!ifs.getline(buf, sizeof(buf))){
 							cerr << "Wrong file format!\n";
 						}
 						tempStr.assign(buf);
