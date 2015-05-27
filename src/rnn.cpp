@@ -236,7 +236,8 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 				}
 			}
 			*/
-			cout << "Validate Acc: " << (float)numAcc/totalCount << endl;
+			temp = (float)numAcc/totalCount;
+			cout << "Validate Acc: " << temp << endl;
 			
 			
 			/*vector<char> pred;
@@ -249,7 +250,7 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 			cout << "acc is " << temp << endl;*/
 			if(maxAcc<temp){
 				maxAcc=temp;
-				if(maxAcc>0.4){
+				if(maxAcc>0.03){
 					string modelpath="./model/acc_";
 					stringstream s;
 					s<<modelpath<<((int)(maxAcc*1000)/(int)10)<<".mdl";
