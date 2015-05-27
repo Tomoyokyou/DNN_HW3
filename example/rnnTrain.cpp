@@ -80,5 +80,5 @@ int main(int argc,char** argv){
 	RNN rnn(rate,momentum,reg,var,NORMAL,dim,ALL, step,d);
 	rnn.train(d,epoch,0.8,decay);
 	rnn.save(outF);
-
+	return 0;
 }
