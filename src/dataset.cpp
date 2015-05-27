@@ -14,12 +14,15 @@ Dataset::Dataset(){
 	_wordNum = 0;
 	_sentCtr = 0;
 	_trainSentCtr = 0;
+	_cutClass = 0;
 }
 
-Dataset::Dataset(const char* featurePath, const char* classPath, const char* sntPath){
+Dataset::Dataset(const char* featurePath, const char* classPath, const char* sntPath, int cutClass){
 	// initializing
 	_sentCtr = 0;
+	_cutClass = cutClass;
 	_trainSentCtr = 0;
+	cout << "cutClass is " << _cutClass << endl;
 	_validSentCtr = 0;
 	cout << "inputting word2vec file:\n";	
 	ifstream fin(featurePath);
@@ -60,14 +63,23 @@ Dataset::Dataset(const char* featurePath, const char* classPath, const char* snt
 		auto it = _wordMap.find(wordName);
 		if (it == _wordMap.end())
 			cout << "ERROR::word not in the list!\n";
-		it->second.setClassLabel(cLabel);
+		it->second.setClassLabel(cLabel - _cutClass);
 		//cout << it->first << " " << cLabel << endl;
-		if (_classCount.size() == cLabel)
+		if (_classCount.size() == cLabel - _cutClass)
 			_classCount.push_back(0);
-		_classCount[cLabel] ++;
-		it->second.setIndex(_classCount[cLabel]-1);
+		if (cLabel - _cutClass >= 0){
+			_classCount[cLabel - _cutClass] ++;
+			it->second.setIndex(_classCount[cLabel - _cutClass]-1);
+		}
 	}
-	
+	//
+	unordered_map<string,Word>::iterator iter;
+	for(iter=_wordMap.begin();iter!=_wordMap.end();++iter){
+		if (iter->second.getClassLabel() >= 0)
+			(iter->second).genMat(_classCount.size(),_classCount[(iter->second).getClassLabel()]);
+	}
+	//
+
 	//debugging
 	/*
 	cout <<_wordMap.size()<<"yo"<<endl;
@@ -102,7 +114,7 @@ Dataset::Dataset(const char* featurePath, const char* classPath, const char* snt
 		}
 		
 		auto it = _wordMap.find(tmpStr);
-		if (it->second.getClassLabel() >= 51)
+		if (it->second.getClassLabel() >= 0)
 			tmpSent.getSent().push_back(&it->second);
 		/*
 		cout << tmpStr << " ";
@@ -141,6 +153,27 @@ Dataset::Dataset(const Dataset& d){
 	_data = d._data;
 	_wordMap = d._wordMap;
 };
+
+Word::Word(int clabel,int index,mat feature,int ccountsize,int classcountidx):_classLabel(clabel),_index(index),_feature(feature){
+	classoutput.resize(ccountsize,1,0);
+	MatrixXf* tmp=classoutput.getData();
+	if(_classLabel >=0)
+		(*tmp)(_classLabel,0)=1;
+	wordoutput.resize(classcountidx,1,0);
+	tmp=wordoutput.getData();
+	if(_index>=0)
+		(*tmp)(_index,0)=1;
+}
+void Word::genMat(int ccountsize,int classcountidx){
+	classoutput.resize(ccountsize,1,0);
+	MatrixXf* tmp=classoutput.getData();
+	if(_classLabel>=0)
+		(*tmp)(_classLabel,0)=1;
+	wordoutput.resize(classcountidx,1,0);
+	tmp=wordoutput.getData();
+	if(_index>=0)
+		(*tmp)(_index,0)=1;
+}
 
 mat Word::getClassOutput(Dataset& d) {
 	int classNum = d._classCount.size();
@@ -193,6 +226,26 @@ Sentence Dataset::getTrainSent() {
 		_trainSentCtr = 0;
 	return tmp;
 }
+
+//
+void Dataset::getAllTrainSent(vector<Sentence>& out){
+	for(size_t t=0;t<_trainLabel.size();++t){
+		if(_data[_trainLabel[t]].getSize()>1)
+		out.push_back(_data[_trainLabel[t]]);
+	}
+}
+void Dataset::getAllTestSent(vector<Sentence>& out){
+	out=_testData;
+}
+
+void Dataset::getAllValidSent(vector<Sentence>& out){
+	for(size_t t=0;t<_validLabel.size();++t){
+		if(_data[_validLabel[t]].getSize()>1)
+		out.push_back(_data[_validLabel[t]]);
+	}
+}
+
+//
 Sentence Dataset::getValidSent() {
 	Sentence tmp = _data[_validLabel[_validSentCtr]];
 	_validSentCtr++;
@@ -240,7 +293,7 @@ void Dataset::parseTestData(const char* testPath){
 		
 		auto it = _wordMap.find(tmpStr);
 		//unordered_map<string, Word*> const_iterator it = _wordMap.find(tmpStr);
-		if (it->second.getClassLabel() >= 51)
+		if (it->second.getClassLabel() >= 0)
 			tmpSent.getSent().push_back(&it->second);
 		/*
 		cout << tmpStr << " ";
