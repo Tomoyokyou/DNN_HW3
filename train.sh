@@ -17,6 +17,14 @@ HIDDEN=50
 REG=0
 OUT=./model/out.mdl
 
+mkdir -p model
+
+if [ -f ./bin/train.app ]; then
+echo "executables checked..."
+else
+echo "missing exe:train.app..."
+make train
+fi
 ./bin/train.app  ${FEATUREFILE} ${SENTENCEFILE} ${CLASSFILE} ${TESTFILE} --ans ${ANSWERFILE} --rate ${RATE} \
 --momentum ${MOMENTUM} --epoch ${EPOCH} --decay ${DECAY} --var ${VAR} --step ${STEP} --reg ${REG} \
  --hidden ${HIDDEN} --outF ${OUT} 
