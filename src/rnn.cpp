@@ -90,7 +90,7 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 	float Eout = 1;
 	float pastEout = Eout;
 	float minEout = Eout;
-	float maxAcc = 0;
+	float maxAcc = 0,temp;
 	size_t oneEpoch = data.getTrainSentNum();
 	size_t epochCnt = 1;
 	size_t num = 0;
@@ -120,11 +120,11 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 	}
 	data.getAllTestSent(testset);
 	vector<Word*>* wvptr=NULL;
-	vector<char> ans;
+	//vector<char> ans;
 	//string ansPath="/home/hui/project/rnnFeat/answer.txt";
-  	string ansPath="/home/ahpan/Data/answer.txt";
-	readAns(ansPath,ans);
-	bool haveans=(ans.size()==1040);
+	//string ansPath="/home/ahpan/Data/answer.txt";
+	//readAns(ansPath,ans);
+	//bool haveans=(ans.size()==1040);
 	cout<<"---------------------"<<endl;
 	cout<<"-   RNN training  -"<<endl;
 	cout<<"---------------------"<<endl;
@@ -132,9 +132,9 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 	cout<<"   training:  "<<trainset.size()<<endl;
 	cout<<"   validation:"<<validset.size()<<endl;
 	cout<<"   testing:   "<<testset.size()<<endl;
-	cout<<"   answer:    "<<((haveans)?"true":"false")<<endl;
+	//cout<<"   answer:    "<<((haveans)?"true":"false")<<endl;
 	cout<<"---------------------"<<endl;
-	for(; epochCnt; epochCnt++ ){   // increment by sentence
+	for(; epochCnt<maxEpoch+1; epochCnt++ ){   // increment by sentence
 		cout<<"EPOCH: "<<epochCnt<<" Highest Accuracy: "<<maxAcc<<endl;
 		for(vector<Sentence>::iterator it=trainset.begin();it!=trainset.end();++it){
 			wvptr=it->getWordVecPtr();
@@ -144,35 +144,9 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 		wordClassLabel.clear();
 		// push back first word
 		num++;
-		//cout<<"wsize: "<<wvptr->size()<<endl;
 
 		feedForward(*wvptr,forwardSet,wordClassLabel);
 
-		/*
-		Word * wptr,*wpptr;
-		for(size_t t=0;t<wvptr->size()-1;++t){
-			wptr=wvptr->at(t+1);wpptr=wvptr->at(t);
-			wordClassLabel.push_back(wptr->getClassLabel());
-			feedForward(wpptr->getMatPtr(),fin,wptr->getClassLabel());
-			ans[0]=wptr->getClassOutput(data);
-			ans[1]=wptr->getWordOutput(data);
-			forwardSet.push_back(pair<vector<mat>,vector<mat>>(fin,ans));
-		}
-		*/
-		//
-		/*
-		for (int wordCnt = 0; wordCnt < crtSent.getSize()-1; wordCnt++){
-			int nextLabel = crtSent.getWord(wordCnt+1)->getClassLabel();
-			int tmpLabel = crtSent.getWord(wordCnt)->getClassLabel();
-			wordClassLabel.push_back(nextLabel);
-			//feedForward(crtSent.getWord(wordCnt)->getMatFeature(), fin, nextLabel);
-			feedForward(crtSent.getWord(wordCnt)->getMatPtr(),fin,nextLabel);
-			// store all forward output 
-			ans[0]=crtSent.getWord(wordCnt+1)->getClassOutput(data);
-			ans[1]=crtSent.getWord(wordCnt+1)->getWordOutput(data);
-			forwardSet.push_back(pair<vector<mat>,vector<mat>>(fin,ans));
-		}
-		*/
 		backPropagate(forwardSet, wordClassLabel);
 		//reset
 		for (int i = 0; i < _transforms.size(); i++){
@@ -265,20 +239,20 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 			cout << "Validate Acc: " << (float)numAcc/totalCount << endl;
 			
 			
-			vector<char> pred;
+			/*vector<char> pred;
 			readPredict(data, pred);
 			float temp = 0;
 			for (int k = 0; k < pred.size(); k ++)
 				if (pred[k] == ans[k])
 					temp ++;
 			temp /= (float)1040;
-			cout << "acc is " << temp << endl;
+			cout << "acc is " << temp << endl;*/
 			if(maxAcc<temp){
 				maxAcc=temp;
 				if(maxAcc>0.4){
 					string modelpath="./model/acc_";
 					stringstream s;
-					s<<modelpath<<(int)(maxAcc*1000/(int)10)<<".mdl";
+					s<<modelpath<<((int)(maxAcc*1000)/(int)10)<<".mdl";
 					save(s.str());
 					}
 			}
@@ -526,9 +500,10 @@ void RNN::feedForward(const vector<Word*>& words,vector<pair<vector<mat>,vector<
 		wp2=words[t+1];
 		classout.push_back(wp2->getClassLabel());
 		fout[0]=*(wp1->getMatPtr());
-		((Recursive*)_transforms[0])->forwardFirst(fout[1],wp1->getMatPtr());
-		for(size_t k=1;k<_transforms.size();++k)
-			(_transforms[k])->forward(fout[k+1],fout[k]);
+			_transforms[0]->forward(fout[1],fout[0]);
+		for(size_t k=1;k<_transforms.size();++k){
+			_transforms[k]->forward(fout[k+1],fout[k]);
+		}
 		_outSoftmax[classout[t]]->forward(fout[_transforms.size()+1],fout[_transforms.size()-1]);
 		//ans[0]=wp2->getClassOutput(data);
 		//ans[1]=wp2->getWordOutput(data);
@@ -537,18 +512,6 @@ void RNN::feedForward(const vector<Word*>& words,vector<pair<vector<mat>,vector<
 		out.push_back(pair<vector<mat>,vector<mat*>>(fout,ans));
 	}
 
-	/*
-	//mat tempInputMat = inputMat;
-	fout.resize(_transforms.size()+2);//
-	//fout[0]=inputMat;
-	fout[0]=*inputMat;
-	//_transforms.at(0)->forward(fout[1],fout[0]);
-	((Recursive*)_transforms.at(0))->forwardFirst(fout[1],inputMat);//
-	for(size_t i = 1; i < _transforms.size(); i++){
-		(_transforms.at(i))->forward(fout[i+1],fout[i] );
-	}
-	_outSoftmax[classLabel]->forward(fout[_transforms.size()+1], fout[_transforms.size()-1]);
-	*/
 }
 
 void RNN::feedForwardOut(mat* inputMat,vector<mat>& fout,int classLabel){
@@ -557,9 +520,9 @@ void RNN::feedForwardOut(mat* inputMat,vector<mat>& fout,int classLabel){
 	//fout[0]=inputMat;
 	fout[0]=*inputMat;
 	//_transforms.at(0)->forward(fout[1],fout[0]);
-	((Recursive*)_transforms.at(0))->forwardFirst(fout[1],inputMat);//
+	_transforms[0]->forward(fout[1],fout[0]);
 	for(size_t i = 1; i < _transforms.size(); i++){
-		(_transforms.at(i))->forward(fout[i+1],fout[i] );
+		_transforms.at(i)->forward(fout[i+1],fout[i]);
 	}
 	_outSoftmax[classLabel]->forward(fout[_transforms.size()+1], fout[_transforms.size()-1]);
 }
@@ -635,10 +598,10 @@ void calError(mat& errout,const mat& fin,Transforms* act,Transforms* nex,const m
 	}
 }
 
-float RNN::calAcc(){
-	string prePath("./model/predict.csv");
+float RNN::calAcc(string prePath,string ansPath){
+	//string prePath("./model/predict.csv");
 	//string ansPath("/home/hui/project/rnnFeat/answer.txt");
-	string ansPath("/home/ahpan/Data/answer.txt");
+	//string ansPath("/home/ahpan/Data/answer.txt");
 	ifstream pre(prePath.c_str());
 	ifstream ans(ansPath.c_str());
 	if (!pre) cout <<"can't open pre file\n";
