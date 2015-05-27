@@ -122,7 +122,7 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 	vector<Word*>* wvptr=NULL;
 	vector<char> ans;
 	//string ansPath="/home/hui/project/rnnFeat/answer.txt";
-	string ansPath="model/answer.txt";
+  	string ansPath="/home/ahpan/Data/answer.txt";
 	readAns(ansPath,ans);
 	bool haveans=(ans.size()==1040);
 	cout<<"---------------------"<<endl;
