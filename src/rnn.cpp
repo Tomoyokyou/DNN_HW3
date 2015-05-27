@@ -178,7 +178,7 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 				if(maxAcc>0.4){
 					string modelpath="./model/acc_";
 					stringstream s;
-					s<<modelpath<<(int)(maxAcc*100)<<".mdl";
+					s<<modelpath<<(int)(maxAcc*1000/(int)10)<<".mdl";
 					save(s.str());
 					}
 			}
