@@ -14,6 +14,7 @@ DECAY=0.99
 VAR=0.2
 STEP=5
 HIDDEN=50
+HIDNUM=1
 REG=0
 OUT=./model/out.mdl
 CUTCLASS=50
@@ -28,4 +29,4 @@ make train
 fi
 ./bin/train.app  ${FEATUREFILE} ${SENTENCEFILE} ${CLASSFILE} ${TESTFILE} --ans ${ANSWERFILE} --rate ${RATE} \
 --momentum ${MOMENTUM} --epoch ${EPOCH} --decay ${DECAY} --var ${VAR} --step ${STEP} --reg ${REG} \
- --hidden ${HIDDEN} --outF ${OUT} --cutClass ${CUTCLASS}
+ --hidden ${HIDDEN} --outF ${OUT} --cutClass ${CUTCLASS} --hidnum ${HIDNUM}
