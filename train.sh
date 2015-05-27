@@ -1,5 +1,5 @@
-FEATUREDIR=/home/ahpan/DNN_HW3/model/preprocess_3/
-ANSDIR=/home/ahpan/Data/
+FEATUREDIR=/Users/Mac/Downloads/DNN_HW3/model/
+ANSDIR=/Users/Mac/Downloads/DNN_HW3/model/
 #FEATUREDIR=/home/hui/project/rnnFeat/
 #ANSDIR=/home/hui/project/rnnFeat/
 FEATUREFILE=${FEATUREDIR}word_vector.txt

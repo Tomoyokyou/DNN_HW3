@@ -3,30 +3,27 @@
 !_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
-!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+!_TAG_PROGRAM_VERSION	5.8	//
 ACT	../include/transforms.h	/^enum ACT{$/;"	g
 ALL	../include/dnn.h	/^	ALL, $/;"	e	enum:Method
 ALL	../include/rnn.h	/^	ALL, $/;"	e	enum:Method
 BATCH	../include/dnn.h	/^	BATCH, $/;"	e	enum:Method
 BATCH	../include/rnn.h	/^	BATCH, $/;"	e	enum:Method
-DATASET_H_	../include/dataset.h	2;"	d
+DATASET_H_	../include/dataset.h	/^#define DATASET_H_$/;"	d
 DNN	../include/dnn.h	/^class DNN{$/;"	c
-DNN	./dnn.cpp	/^DNN::DNN():_learningRate(0.001),_momentum(0), _method(ALL){}$/;"	f	class:DNN
-DNN	./dnn.cpp	/^DNN::DNN(float learningRate, float momentum,float reg, float variance,Init init, const vector<size_t>& v, Method method):_learningRate(learningRate), _momentum(momentum),_reg(reg), _method(method){$/;"	f	class:DNN
-DNN_H	../include/dnn.h	2;"	d
+DNN_H	../include/dnn.h	/^#define DNN_H$/;"	d
 Dataset	../include/dataset.h	/^class Dataset{$/;"	c
 Dataset	./dataset.cpp	/^Dataset::Dataset(){$/;"	f	class:Dataset
 Dataset	./dataset.cpp	/^Dataset::Dataset(const Dataset& d){$/;"	f	class:Dataset
-Dataset	./dataset.cpp	/^Dataset::Dataset(const char* featurePath, const char* classPath, const char* sntPath){$/;"	f	class:Dataset
+Dataset	./dataset.cpp	/^Dataset::Dataset(const char* featurePath, const char* classPath, const char* sntPath, int cutClass){$/;"	f	class:Dataset
 ERROR	../include/parser.h	/^        ERROR,$/;"	e	enum:TYPE
-HOST_MATRIX_H	../include/host_matrix.h	2;"	d
+HOST_MATRIX_H	../include/host_matrix.h	/^#define HOST_MATRIX_H$/;"	d
 Init	../include/dnn.h	/^enum Init{$/;"	g
 Init	../include/rnn.h	/^enum Init{$/;"	g
-MAX_EPOCH	./dnn.cpp	14;"	d	file:
-MAX_EPOCH	./rnn.cpp	15;"	d	file:
+MAX_EPOCH	./rnn.cpp	/^#define MAX_EPOCH /;"	d	file:
 MUST	../include/parser.h	/^        MUST,$/;"	e	enum:TYPE
 MUSTNUM	../include/parser.h	/^        MUSTNUM,$/;"	e	enum:TYPE
-MYNNGEN_H	../include/mynngen.h	2;"	d
+MYNNGEN_H	../include/mynngen.h	/^#define MYNNGEN_H$/;"	d
 Method	../include/dnn.h	/^enum Method{$/;"	g
 Method	../include/rnn.h	/^enum Method{$/;"	g
 NONE	../include/parser.h	/^        NONE,$/;"	e	enum:TYPE
@@ -39,19 +36,19 @@ OPTIONNUM	../include/parser.h	/^        OPTIONNUM,$/;"	e	enum:TYPE
 PARSER	../include/parser.h	/^class PARSER{$/;"	c
 PARSER	./parser.cpp	/^PARSER::PARSER(){$/;"	f	class:PARSER
 PARSER	./parser.cpp	/^PARSER::PARSER(const PARSER& p){$/;"	f	class:PARSER
-PARSER_H	../include/parser.h	2;"	d
+PARSER_H	../include/parser.h	/^#define PARSER_H$/;"	d
 RBM	../include/dnn.h	/^	RBM,$/;"	e	enum:Init
 RBM	../include/rnn.h	/^	RBM,$/;"	e	enum:Init
 RECURSIVE	../include/transforms.h	/^	RECURSIVE$/;"	e	enum:ACT
 RNN	../include/rnn.h	/^class RNN{$/;"	c
 RNN	./rnn.cpp	/^RNN::RNN():_learningRate(0.001),_momentum(0), _method(ALL){}$/;"	f	class:RNN
-RNN	./rnn.cpp	/^RNN::RNN(float learningRate, float momentum,float reg, float variance,Init init, const vector<size_t>& v, Method method, int step):_learningRate(learningRate), _momentum(momentum),_reg(reg), _method(method){$/;"	f	class:RNN
-RNN_H	../include/rnn.h	2;"	d
+RNN	./rnn.cpp	/^RNN::RNN(float learningRate, float momentum,float reg, float variance,Init init, const vector<size_t>& v, Method method, int step, Dataset& data):_learningRate(learningRate), _momentum(momentum),_reg(reg), _method(method){$/;"	f	class:RNN
+RNN_H	../include/rnn.h	/^#define RNN_H$/;"	d
 Recursive	../include/transforms.h	/^class Recursive : public Transforms{$/;"	c
-Recursive	./transforms.cpp	/^Recursive::Recursive(const Recursive& s): Transforms(s),_step(s._step),_counter(0),_h(s._h){	$/;"	f	class:Recursive
-Recursive	./transforms.cpp	/^Recursive::Recursive(const mat& w,const mat& h,int step): Transforms(w),_step(step),_h(h),_counter(0){$/;"	f	class:Recursive
-Recursive	./transforms.cpp	/^Recursive::Recursive(size_t inputdim,size_t outputdim,float range,int step): Transforms(inputdim,outputdim,range),_step(step),_counter(0){$/;"	f	class:Recursive
-Recursive	./transforms.cpp	/^Recursive::Recursive(size_t inputdim,size_t outputdim,myNnGen& ran,int step): Transforms(inputdim,outputdim,ran),_step(step),_counter(0){$/;"	f	class:Recursive
+Recursive	./transforms.cpp	/^Recursive::Recursive(const Recursive& s): Transforms(s),_step(s._step),_h(s._h){	$/;"	f	class:Recursive
+Recursive	./transforms.cpp	/^Recursive::Recursive(const mat& w,const mat& h,int step): Transforms(w),_step(step),_h(h){$/;"	f	class:Recursive
+Recursive	./transforms.cpp	/^Recursive::Recursive(size_t inputdim,size_t outputdim,float range,int step): Transforms(inputdim,outputdim,range),_step(step){$/;"	f	class:Recursive
+Recursive	./transforms.cpp	/^Recursive::Recursive(size_t inputdim,size_t outputdim,myNnGen& ran,int step): Transforms(inputdim,outputdim,ran),_step(step){$/;"	f	class:Recursive
 SIGMOID	../include/transforms.h	/^	SIGMOID,$/;"	e	enum:ACT
 SOFTMAX	../include/transforms.h	/^	SOFTMAX,$/;"	e	enum:ACT
 Sentence	../include/dataset.h	/^		Sentence() {}$/;"	f	class:Sentence
@@ -66,10 +63,10 @@ Softmax	./transforms.cpp	/^Softmax::Softmax(const Softmax& s): Transforms(s){$/;
 Softmax	./transforms.cpp	/^Softmax::Softmax(const mat& w):Transforms(w){$/;"	f	class:Softmax
 Softmax	./transforms.cpp	/^Softmax::Softmax(size_t inputdim,size_t outputdim,float range): Transforms(inputdim,outputdim,range){$/;"	f	class:Softmax
 Softmax	./transforms.cpp	/^Softmax::Softmax(size_t inputdim,size_t outputdim,myNnGen& ran): Transforms(inputdim,outputdim,ran){$/;"	f	class:Softmax
-TRANSFORMS_H	../include/transforms.h	2;"	d
+TRANSFORMS_H	../include/transforms.h	/^#define TRANSFORMS_H$/;"	d
 TYPE	../include/parser.h	/^enum TYPE{$/;"	g
 Transforms	../include/transforms.h	/^class Transforms{$/;"	c
-Transforms	./transforms.cpp	/^Transforms::Transforms(const Transforms& t):_w(t._w),_pw(t._pw){}$/;"	f	class:Transforms
+Transforms	./transforms.cpp	/^Transforms::Transforms(const Transforms& t):_w(t._w){$/;"	f	class:Transforms
 Transforms	./transforms.cpp	/^Transforms::Transforms(const mat& w){$/;"	f	class:Transforms
 Transforms	./transforms.cpp	/^Transforms::Transforms(size_t inputdim,size_t outputdim,float range){$/;"	f	class:Transforms
 Transforms	./transforms.cpp	/^Transforms::Transforms(size_t inputdim,size_t outputdim,myNnGen& ran){$/;"	f	class:Transforms
@@ -77,26 +74,31 @@ Transpose	../include/host_matrix.h	/^		Transpose(const host_matrix<T>& m): _m(m)
 Transpose	../include/host_matrix.h	/^	class Transpose {$/;"	c	class:host_matrix
 UNIFORM	../include/dnn.h	/^	UNIFORM,$/;"	e	enum:Init
 UNIFORM	../include/rnn.h	/^	UNIFORM,$/;"	e	enum:Init
-UTIL_H	../include/util.h	2;"	d
-Word	../include/dataset.h	/^		Word() : _classLabel(0), _index(0) {}$/;"	f	class:Word
-Word	../include/dataset.h	/^		Word(int clabel, int index, vector<double> feature):$/;"	f	class:Word
+UTIL_H	../include/util.h	/^#define UTIL_H$/;"	d
+Word	../include/dataset.h	/^		Word() : _classLabel(-1), _index(0) {}$/;"	f	class:Word
+Word	../include/dataset.h	/^		Word(int clabel, int index, mat feature):$/;"	f	class:Word
 Word	../include/dataset.h	/^class Word{$/;"	c
+Word	./dataset.cpp	/^Word::Word(int clabel,int index,mat feature,int ccountsize,int classcountidx):_classLabel(clabel),_index(index),_feature(feature){$/;"	f	class:Word
+_classCount	../include/dataset.h	/^    vector<int> _classCount;	$/;"	m	class:Dataset
 _classLabel	../include/dataset.h	/^		int _classLabel;$/;"	m	class:Word
-_counter	../include/transforms.h	/^		int _counter;$/;"	m	class:Recursive
+_counter	../include/transforms.h	/^		int _counter;$/;"	m	class:Transforms
+_cutClass	../include/dataset.h	/^	int _cutClass;$/;"	m	class:Dataset
 _d	../include/host_matrix.h	/^	MatrixXf* _d;$/;"	m	class:host_matrix
 _data	../include/dataset.h	/^	vector<Sentence> _data;$/;"	m	class:Dataset
 _dis	../include/mynngen.h	/^		normal_distribution<float>* _dis;$/;"	m	class:myNnGen
-_feature	../include/dataset.h	/^		vector<double> _feature;$/;"	m	class:Word
+_feature	../include/dataset.h	/^		mat _feature;$/;"	m	class:Word
 _featureDim	../include/dataset.h	/^	size_t _featureDim;$/;"	m	class:Dataset
 _ggen	../include/mynngen.h	/^		mt19937 _ggen;$/;"	m	class:myNnGen
+_graMem	../include/transforms.h	/^	mat _graMem;$/;"	m	class:Softmax
 _h	../include/transforms.h	/^		mat _h;$/;"	m	class:Recursive
 _history	../include/transforms.h	/^		vector<mat> _history;$/;"	m	class:Recursive
-_index	../include/dataset.h	/^		int _index; \/\/ self index, from 0 ~ _wordNum$/;"	m	class:Word
+_hmem	../include/transforms.h	/^		mat _hmem;$/;"	m	class:Recursive
+_index	../include/dataset.h	/^		int _index; \/\/ index inside label$/;"	m	class:Word
+_inputPtr	../include/transforms.h	/^		vector<mat*> _inputPtr;$/;"	m	class:Recursive
 _learningRate	../include/dnn.h	/^	float _learningRate;$/;"	m	class:DNN
 _learningRate	../include/rnn.h	/^	float _learningRate;$/;"	m	class:RNN
 _m	../include/host_matrix.h	/^		const host_matrix<T> _m;$/;"	m	class:host_matrix::Transpose
 _m	../include/mynngen.h	/^		float _m;$/;"	m	class:myNnGen
-_mem	../include/transforms.h	/^		mat _mem;$/;"	m	class:Recursive
 _method	../include/dnn.h	/^	Method _method;$/;"	m	class:DNN
 _method	../include/rnn.h	/^	Method _method;$/;"	m	class:RNN
 _momentum	../include/dnn.h	/^	float _momentum;$/;"	m	class:DNN
@@ -107,13 +109,17 @@ _mustList	../include/parser.h	/^    vector<string> _mustList;$/;"	m	class:PARSER
 _numMap	../include/parser.h	/^    map<string,float> _numMap;$/;"	m	class:PARSER
 _options	../include/parser.h	/^    vector<string> _options;$/;"	m	class:PARSER
 _optionsNum	../include/parser.h	/^    vector<string> _optionsNum;$/;"	m	class:PARSER
-_pw	../include/transforms.h	/^		mat _pw;$/;"	m	class:Transforms
+_outSoftmax	../include/rnn.h	/^	vector<Transforms*> _outSoftmax;$/;"	m	class:RNN
+_pw	../include/transforms.h	/^		mat _pw; \/\/ momentum$/;"	m	class:Transforms
+_pwh	../include/transforms.h	/^		mat _pwh;$/;"	m	class:Recursive
 _reg	../include/dnn.h	/^	float _reg;$/;"	m	class:DNN
 _reg	../include/rnn.h	/^	float _reg;$/;"	m	class:RNN
 _sentCtr	../include/dataset.h	/^	size_t _sentCtr;$/;"	m	class:Dataset
 _sentence	../include/dataset.h	/^		vector<Word*> _sentence;$/;"	m	class:Sentence
 _step	../include/transforms.h	/^		int _step;$/;"	m	class:Recursive
 _stringMap	../include/parser.h	/^    map<string,string> _stringMap;$/;"	m	class:PARSER
+_testData	../include/dataset.h	/^	vector<Sentence> _testData;$/;"	m	class:Dataset
+_testSentCtr	../include/dataset.h	/^	size_t _testSentCtr;$/;"	m	class:Dataset
 _trainLabel	../include/dataset.h	/^	vector<int> _trainLabel;$/;"	m	class:Dataset
 _trainSentCtr	../include/dataset.h	/^	size_t _trainSentCtr;$/;"	m	class:Dataset
 _transforms	../include/dnn.h	/^	vector<Transforms*> _transforms;$/;"	m	class:DNN
@@ -124,55 +130,58 @@ _validSentCtr	../include/dataset.h	/^	size_t _validSentCtr;$/;"	m	class:Dataset
 _validateAccuracy	../include/dnn.h	/^	vector<float> _validateAccuracy;$/;"	m	class:DNN
 _validateAccuracy	../include/rnn.h	/^	vector<float> _validateAccuracy;$/;"	m	class:RNN
 _w	../include/transforms.h	/^		mat _w;$/;"	m	class:Transforms
+_wmem	../include/transforms.h	/^		mat _wmem;$/;"	m	class:Recursive
 _wordMap	../include/dataset.h	/^	unordered_map<string, Word> _wordMap;$/;"	m	class:Dataset
 _wordNum	../include/dataset.h	/^	size_t _wordNum;$/;"	m	class:Dataset
+accGra	./transforms.cpp	/^void Softmax::accGra(const mat& fin,const mat& delta,float rate,float regularization,float momentum){$/;"	f	class:Softmax
 addMust	./parser.cpp	/^void PARSER::addMust(string name,bool isNum){$/;"	f	class:PARSER
 addOption	./parser.cpp	/^void PARSER::addOption(string name,bool isNum){$/;"	f	class:PARSER
-backPropagate	./dnn.cpp	/^void DNN::backPropagate(float learningRate, float momentum,float regularization,const vector<mat>& fin,const mat& answer){$/;"	f	class:DNN
-backPropagate	./rnn.cpp	/^void RNN::backPropagate(float learningRate, float momentum,float regularization,const vector<mat>& fin,const mat& answer){$/;"	f	class:RNN
-backPropagate	./transforms.cpp	/^void Recursive::backPropagate(const mat& fin,const mat& delta,float rate,float momentum,float regularization){$/;"	f	class:Recursive
-backPropagate	./transforms.cpp	/^void Sigmoid::backPropagate(const mat& fin,const mat& delta, float rate,float momentum,float regularization){$/;"	f	class:Sigmoid
-backPropagate	./transforms.cpp	/^void Softmax::backPropagate(const mat& fin,const mat& delta,float rate, float momentum, float regularization=0.0){$/;"	f	class:Softmax
-bptt	./transforms.cpp	/^void Recursive::bptt(const mat& delta,float rate,float regularization){$/;"	f	class:Recursive
-calError	./dnn.cpp	/^void calError(mat& errout,const mat& fin,Transforms* act,const mat& delta){$/;"	f
+backPropagate	./rnn.cpp	/^void RNN::backPropagate(const vector<pair<vector<mat>,vector<mat*>> >& fromForward,const vector<int>& classLabel){$/;"	f	class:RNN
+backPropagate	./transforms.cpp	/^void Recursive::backPropagate(const mat& fin,const mat& delta,float rate,float regularization,float momentum){$/;"	f	class:Recursive
+backPropagate	./transforms.cpp	/^void Sigmoid::backPropagate(const mat& fin,const mat& delta, float rate,float regularization,float momentum){$/;"	f	class:Sigmoid
+backPropagate	./transforms.cpp	/^void Softmax::backPropagate(const mat& fin,const mat& delta,float rate, float regularization,float momentum){$/;"	f	class:Softmax
+bptt	./transforms.cpp	/^void Recursive::bptt(mat& gra,float rate,float regularization,float momentum){$/;"	f	class:Recursive
+calAcc	./rnn.cpp	/^float RNN::calAcc(){$/;"	f	class:RNN
 calError	./rnn.cpp	/^void calError(mat& errout,const mat& fin,Transforms* act,Transforms* nex,const mat& delta){$/;"	f
-computeErrRate	./dnn.cpp	/^float computeErrRate(const vector<size_t>& ans, const vector<size_t>& output){$/;"	f
+classoutput	../include/dataset.h	/^		mat classoutput;$/;"	m	class:Word
 computeErrRate	./rnn.cpp	/^float computeErrRate(const vector<size_t>& ans, const vector<size_t>& output){$/;"	f
-computeLabel	./dnn.cpp	/^void computeLabel(vector<size_t>& result,const mat& outputMat){$/;"	f
 computeLabel	./rnn.cpp	/^void computeLabel(vector<size_t>& result,const mat& outputMat){$/;"	f
 dataSegment	./dataset.cpp	/^void Dataset::dataSegment(float trainProp = 0.95){$/;"	f	class:Dataset
-feedForward	./dnn.cpp	/^void DNN::feedForward(const mat& inputMat,vector<mat>& fout){$/;"	f	class:DNN
-feedForward	./rnn.cpp	/^void RNN::feedForward(const mat& inputMat,vector<mat>& fout){$/;"	f	class:RNN
+feedForward	./rnn.cpp	/^void RNN::feedForward(const vector<Word*>& words,vector<pair<vector<mat>,vector<mat*>>>& out,vector<int>& classout){$/;"	f	class:RNN
+feedForwardOut	./rnn.cpp	/^void RNN::feedForwardOut(mat* inputMat,vector<mat>& fout,int classLabel){$/;"	f	class:RNN
 fillwith	../include/host_matrix.h	/^void host_matrix<T>::fillwith(T val){$/;"	f	class:host_matrix
 find	./parser.cpp	/^TYPE PARSER::find(string name){$/;"	f	class:PARSER
 forward	./transforms.cpp	/^void Recursive::forward(mat& out,const mat& in){$/;"	f	class:Recursive
 forward	./transforms.cpp	/^void Sigmoid::forward(mat& out,const mat& in){$/;"	f	class:Sigmoid
 forward	./transforms.cpp	/^void Softmax::forward(mat& out,const mat& in){$/;"	f	class:Softmax
+forwardFirst	./transforms.cpp	/^void Recursive::forwardFirst(mat& out,mat* in){$/;"	f	class:Recursive
+genMat	./dataset.cpp	/^void Word::genMat(int ccountsize,int classcountidx){$/;"	f	class:Word
 getAct	../include/transforms.h	/^	virtual ACT getAct()const {return SIGMOID;};$/;"	f	class:Sigmoid
 getAct	../include/transforms.h	/^	virtual ACT getAct()const{return RECURSIVE;};$/;"	f	class:Recursive
 getAct	../include/transforms.h	/^	virtual ACT getAct()const{return SOFTMAX;};$/;"	f	class:Softmax
+getAllTestSent	./dataset.cpp	/^void Dataset::getAllTestSent(vector<Sentence>& out){$/;"	f	class:Dataset
+getAllTrainSent	./dataset.cpp	/^void Dataset::getAllTrainSent(vector<Sentence>& out){$/;"	f	class:Dataset
+getAllValidSent	./dataset.cpp	/^void Dataset::getAllValidSent(vector<Sentence>& out){$/;"	f	class:Dataset
+getClassCount	../include/dataset.h	/^	const vector<int>& getClassCount() {return _classCount;}$/;"	f	class:Dataset
 getClassLabel	../include/dataset.h	/^		int getClassLabel() {return _classLabel; }$/;"	f	class:Word
+getClassNum	../include/dataset.h	/^	size_t getClassNum() {return _classCount.size();}$/;"	f	class:Dataset
+getClassOutput	./dataset.cpp	/^mat Word::getClassOutput(Dataset& d) {$/;"	f	class:Word
+getClassOutputPtr	../include/dataset.h	/^		mat* getClassOutputPtr(){mat* tmp=&classoutput; return tmp;}$/;"	f	class:Word
 getCols	../include/host_matrix.h	/^	size_t getCols() const {return _d->cols();}$/;"	f	class:host_matrix
 getData	../include/host_matrix.h	/^	MatrixXf* getData() const {return _d;}$/;"	f	class:host_matrix
-getFeature	../include/dataset.h	/^		vector<double>& getFeature() {return _feature; }$/;"	f	class:Word
-getFeatureDim	../include/dataset.h	/^		int getFeatureDim() {return _feature.size(); }$/;"	f	class:Word
+getFeatureDim	../include/dataset.h	/^		int getFeatureDim() {return _feature.getRows(); }$/;"	f	class:Word
 getFeatureDim	../include/dataset.h	/^	size_t getFeatureDim() {return _featureDim; }$/;"	f	class:Dataset
-getGradient	./transforms.cpp	/^mat Transforms::getGradient()const{return _pw;}$/;"	f	class:Transforms
-getHiddenForward	./dnn.cpp	/^void DNN::getHiddenForward(mat& outputMat, const mat& inputMat){$/;"	f	class:DNN
 getHiddenForward	./rnn.cpp	/^void RNN::getHiddenForward(mat& outputMat, const mat& inputMat){$/;"	f	class:RNN
 getIndex	../include/dataset.h	/^		int getIndex() {return _index; }$/;"	f	class:Word
 getInputDim	./transforms.cpp	/^size_t Transforms::getInputDim()const{$/;"	f	class:Transforms
-getInputDimension	./dnn.cpp	/^size_t DNN::getInputDimension(){$/;"	f	class:DNN
 getInputDimension	./rnn.cpp	/^size_t RNN::getInputDimension(){$/;"	f	class:RNN
 getMatFeature	./dataset.cpp	/^mat Word::getMatFeature() {$/;"	f	class:Word
+getMatPtr	../include/dataset.h	/^		mat* getMatPtr(){mat* temp=&_feature;return temp;}$/;"	f	class:Word
 getNum	./parser.cpp	/^bool PARSER::getNum(string name,float& num){$/;"	f	class:PARSER
 getNum	./parser.cpp	/^bool PARSER::getNum(string name,int& num){$/;"	f	class:PARSER
 getNum	./parser.cpp	/^bool PARSER::getNum(string name,size_t& num){$/;"	f	class:PARSER
-getNumLayers	./dnn.cpp	/^size_t DNN::getNumLayers(){$/;"	f	class:DNN
 getNumLayers	./rnn.cpp	/^size_t RNN::getNumLayers(){$/;"	f	class:RNN
-getOneOfNOutput	./dataset.cpp	/^mat Word::getOneOfNOutput(int wordNum) {$/;"	f	class:Word
 getOutputDim	./transforms.cpp	/^size_t Transforms::getOutputDim()const{$/;"	f	class:Transforms
-getOutputDimension	./dnn.cpp	/^size_t DNN::getOutputDimension(){$/;"	f	class:DNN
 getOutputDimension	./rnn.cpp	/^size_t RNN::getOutputDimension(){$/;"	f	class:RNN
 getRows	../include/host_matrix.h	/^	size_t getRows() const {return _d->rows();}$/;"	f	class:host_matrix
 getSent	../include/dataset.h	/^		vector<Word*>& getSent() {return _sentence; }$/;"	f	class:Sentence
@@ -182,6 +191,8 @@ getSentenceNum	../include/dataset.h	/^	size_t getSentenceNum() {return _data.siz
 getSize	../include/dataset.h	/^		int getSize() {return _sentence.size(); }$/;"	f	class:Sentence
 getStep	../include/transforms.h	/^	int getStep()const {return _step;}$/;"	f	class:Recursive
 getString	./parser.cpp	/^bool PARSER::getString(string name,string& str){$/;"	f	class:PARSER
+getTestSent	./dataset.cpp	/^Sentence Dataset::getTestSent() {$/;"	f	class:Dataset
+getTestSentNum	../include/dataset.h	/^	size_t getTestSentNum() {return _testData.size();}$/;"	f	class:Dataset
 getTrainSent	./dataset.cpp	/^Sentence Dataset::getTrainSent() {$/;"	f	class:Dataset
 getTrainSentNum	../include/dataset.h	/^	size_t getTrainSentNum() {return _trainLabel.size();}$/;"	f	class:Dataset
 getValidSent	./dataset.cpp	/^Sentence Dataset::getValidSent() {$/;"	f	class:Dataset
@@ -189,6 +200,9 @@ getValidSentNum	../include/dataset.h	/^	size_t getValidSentNum() {return _validL
 getWeight	./transforms.cpp	/^mat Transforms::getWeight()const{return _w;}$/;"	f	class:Transforms
 getWord	../include/dataset.h	/^		Word* getWord(int i) {return _sentence[i];}$/;"	f	class:Sentence
 getWordNum	../include/dataset.h	/^	size_t getWordNum() {return _wordNum;}	$/;"	f	class:Dataset
+getWordOutput	./dataset.cpp	/^mat Word::getWordOutput(Dataset& d) {$/;"	f	class:Word
+getWordOutputPtr	../include/dataset.h	/^		mat* getWordOutputPtr(){mat* tmp=&wordoutput; return tmp;}$/;"	f	class:Word
+getWordVecPtr	../include/dataset.h	/^		vector<Word*>* getWordVecPtr(){vector<Word*>* tmp=&_sentence;return tmp;}$/;"	f	class:Sentence
 host_matrix	../include/host_matrix.h	/^class host_matrix{$/;"	c
 host_matrix	../include/host_matrix.h	/^host_matrix<T>::host_matrix(){$/;"	f	class:host_matrix
 host_matrix	../include/host_matrix.h	/^host_matrix<T>::host_matrix(T* data,size_t r,size_t c){$/;"	f	class:host_matrix
@@ -198,7 +212,7 @@ host_matrix	../include/host_matrix.h	/^host_matrix<T>::host_matrix(const host_ma
 host_matrix	../include/host_matrix.h	/^host_matrix<T>::host_matrix(size_t r,size_t c){$/;"	f	class:host_matrix
 host_matrix	../include/host_matrix.h	/^host_matrix<T>::host_matrix(size_t r,size_t c,T value){$/;"	f	class:host_matrix
 isNum	./parser.cpp	/^bool PARSER::isNum(string str){$/;"	f	class:PARSER
-load	./dnn.cpp	/^bool DNN::load(const string& fn){$/;"	f	class:DNN
+isreset	../include/transforms.h	/^		bool isreset()const{return _counter==0;}$/;"	f	class:Transforms
 load	./rnn.cpp	/^bool RNN::load(const string& fn){$/;"	f	class:RNN
 mat	../include/dataset.h	/^typedef host_matrix<float> mat;$/;"	t
 mat	../include/dnn.h	/^typedef host_matrix<float> mat;$/;"	t
@@ -206,10 +220,10 @@ mat	../include/rnn.h	/^typedef host_matrix<float> mat;$/;"	t
 mat	../include/transforms.h	/^typedef host_matrix<float> mat;$/;"	t
 mat	../include/util.h	/^typedef host_matrix<float> mat;$/;"	t
 mat	./dataset.cpp	/^typedef host_matrix<float> mat;$/;"	t	file:
-mat	./dnn.cpp	/^typedef host_matrix<float> mat;$/;"	t	file:
 mat	./rnn.cpp	/^typedef host_matrix<float> mat;$/;"	t	file:
 mat	./transforms.cpp	/^typedef host_matrix<float> mat;$/;"	t	file:
 mat	./util.cpp	/^typedef host_matrix<float> mat;$/;"	t	file:
+multWeightInv	../include/transforms.h	/^		mat multWeightInv(const mat& a){return mat(~_w * a);}$/;"	f	class:Transforms
 myNnGen	../include/mynngen.h	/^		myNnGen(){$/;"	f	class:myNnGen
 myNnGen	../include/mynngen.h	/^		myNnGen(float mean,float var){$/;"	f	class:myNnGen
 myNnGen	../include/mynngen.h	/^class myNnGen{$/;"	c
@@ -249,8 +263,9 @@ operator ~	../include/host_matrix.h	/^typename host_matrix<T>::Transpose host_ma
 parseDim	./util.cpp	/^void parseDim(string str,vector<size_t>& dim){$/;"	f
 parseOneOption	./parser.cpp	/^bool PARSER::parseOneOption(string& str){$/;"	f	class:PARSER
 parseOptions	./parser.cpp	/^void PARSER::parseOptions(string str,vector<string>& vout){$/;"	f	class:PARSER
-predict	./dnn.cpp	/^void DNN::predict(vector<size_t>& result, const mat& inputMat){$/;"	f	class:DNN
-predict	./rnn.cpp	/^void RNN::predict(vector<size_t>& result, const mat& inputMat){$/;"	f	class:RNN
+parseTestData	./dataset.cpp	/^void Dataset::parseTestData(const char* testPath){$/;"	f	class:Dataset
+predict	./rnn.cpp	/^void RNN::predict(Dataset& testData, const string& outName = ".\/model\/testOutput.csv"){$/;"	f	class:RNN
+print	../include/dataset.h	/^		void print() {$/;"	f	class:Sentence
 print	../include/host_matrix.h	/^		void print(int precision=5){$/;"	f	class:host_matrix::Transpose
 print	../include/host_matrix.h	/^void host_matrix<T>::print(int precision) const{$/;"	f	class:host_matrix
 print	./parser.cpp	/^void PARSER::print()const{$/;"	f	class:PARSER
@@ -260,35 +275,38 @@ rand_init	./util.cpp	/^void rand_init(mat& w,float range){$/;"	f
 rand_norm	./util.cpp	/^void rand_norm(mat& w,myNnGen& ran){$/;"	f
 read	./parser.cpp	/^bool PARSER::read(int argc,char** argv){$/;"	f	class:PARSER
 read	./parser.cpp	/^bool PARSER::read(string spec){$/;"	f	class:PARSER
+readAns	./rnn.cpp	/^bool readAns(string path,vector<char>& ans){$/;"	f
+readPredict	./rnn.cpp	/^void RNN::readPredict(Dataset& testData, vector<char>& pred){$/;"	f	class:RNN
 reset	../include/mynngen.h	/^		void reset(float mean, float var){$/;"	f	class:myNnGen
-resetCounter	../include/transforms.h	/^	void resetCounter(){_counter=0;_history.clear();}$/;"	f	class:Recursive
+resetCounter	../include/transforms.h	/^	virtual void resetCounter(float rate){$/;"	f	class:Recursive
+resetCounter	../include/transforms.h	/^	virtual void resetCounter(float rate){$/;"	f	class:Sigmoid
+resetCounter	../include/transforms.h	/^	virtual void resetCounter(float rate){$/;"	f	class:Softmax
 resetSentCtr	../include/dataset.h	/^	void   resetSentCtr() {_sentCtr = 0;}$/;"	f	class:Dataset
+resetTestSentCtr	../include/dataset.h	/^	void   resetTestSentCtr()  {_testSentCtr = 0;}$/;"	f	class:Dataset
 resetTrainSentCtr	../include/dataset.h	/^	void   resetTrainSentCtr() {_trainSentCtr = 0;}$/;"	f	class:Dataset
 resetValidSentCtr	../include/dataset.h	/^	void   resetValidSentCtr() {_validSentCtr = 0;}$/;"	f	class:Dataset
 resize	../include/host_matrix.h	/^void host_matrix<T>::resize(size_t r,size_t c){$/;"	f	class:host_matrix
 resize	../include/host_matrix.h	/^void host_matrix<T>::resize(size_t r,size_t c,T val){$/;"	f	class:host_matrix
-save	./dnn.cpp	/^void DNN::save(const string& fn){$/;"	f	class:DNN
 save	./rnn.cpp	/^void RNN::save(const string& fn){$/;"	f	class:RNN
 seed	../include/mynngen.h	/^		void seed(unsigned s){$/;"	f	class:myNnGen
-setLearningRate	./dnn.cpp	/^void DNN::setLearningRate(float learningRate){$/;"	f	class:DNN
+setClassLabel	../include/dataset.h	/^		void setClassLabel(int i) {_classLabel = i;}$/;"	f	class:Word
+setIndex	../include/dataset.h	/^		void setIndex(int i) {_index = i;}$/;"	f	class:Word
 setLearningRate	./rnn.cpp	/^void RNN::setLearningRate(float learningRate){$/;"	f	class:RNN
-setMomentum	./dnn.cpp	/^void DNN::setMomentum(float momentum){$/;"	f	class:DNN
 setMomentum	./rnn.cpp	/^void RNN::setMomentum(float momentum){$/;"	f	class:RNN
-setReg	./dnn.cpp	/^void DNN::setReg(float reg){_reg=reg;}$/;"	f	class:DNN
 setReg	./rnn.cpp	/^void RNN::setReg(float reg){_reg=reg;}$/;"	f	class:RNN
 showParam	../include/mynngen.h	/^		void showParam(){$/;"	f	class:myNnGen
 sigmoid	../include/host_math.h	/^host_matrix<T> sigmoid(const host_matrix<T>& src){$/;"	f
 size	../include/host_matrix.h	/^	size_t size() const {return _d->rows()*_d->cols();}$/;"	f	class:host_matrix
 softmax	../include/host_math.h	/^host_matrix<T> softmax(const host_matrix<T>& src){$/;"	f
 start	./parser.cpp	/^bool PARSER::start(vector<string> vx){$/;"	f	class:PARSER
+status	./rnn.cpp	/^void RNN::status()const$/;"	f	class:RNN
 str2Num	./parser.cpp	/^float PARSER::str2Num(string str){$/;"	f	class:PARSER
 toUpperCase	./parser.cpp	/^string PARSER::toUpperCase(string str){$/;"	f	class:PARSER
-train	./dnn.cpp	/^void DNN::train(Dataset& labeledData, size_t batchSize, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0.8, float alpha = 0.98){$/;"	f	class:DNN
 train	./rnn.cpp	/^void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0.8, float alpha = 0.98){$/;"	f	class:RNN
+wordoutput	../include/dataset.h	/^		mat wordoutput;$/;"	m	class:Word
 write	./transforms.cpp	/^void Recursive::write(ofstream& out){$/;"	f	class:Recursive
 write	./transforms.cpp	/^void Sigmoid::write(ofstream& out){$/;"	f	class:Sigmoid
 write	./transforms.cpp	/^void Softmax::write(ofstream& out){$/;"	f	class:Softmax
-~DNN	./dnn.cpp	/^DNN::~DNN(){$/;"	f	class:DNN
 ~Dataset	../include/dataset.h	/^	~Dataset() {}$/;"	f	class:Dataset
 ~PARSER	./parser.cpp	/^PARSER::~PARSER(){}$/;"	f	class:PARSER
 ~RNN	./rnn.cpp	/^RNN::~RNN(){$/;"	f	class:RNN
