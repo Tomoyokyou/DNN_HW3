@@ -38,4 +38,4 @@ model/*
 *.orig
 ./**/*.orig
 
-./train.sh
+#./train.sh

@@ -23,6 +23,7 @@ void myUsage(){
 	cerr<<"[--hidden]: specify dimension for hidden layer"<<endl;
 	cerr<<"[--cutClass]: specify class number to drop"<<endl;
 	cerr<<"[--hidnum]: numbers of hidden layers"<<endl;
+	cerr<<"[--load]: load rnn model and continuing training"<<endl;
 }
 int main(int argc,char** argv){
 	//string featurePath = "/home/larry/Documents/MLDS/DNN_HW3/model/word_vector.txt";
@@ -49,8 +50,8 @@ int main(int argc,char** argv){
 	p.addOption("--cutClass", true);
 	p.addOption("--hidden",true);
 	p.addOption("--outF",false);
-	p.addOption("--ans",false);
-	string featurePath,sntPath,classPath,testPath,outF,ansF;
+	p.addOption("--load",false);
+	string featurePath,sntPath,classPath,testPath,outF,ansF,loadF;
 
 	float rate,momentum,decay,var,reg;
 	int cutClass;
@@ -74,13 +75,24 @@ int main(int argc,char** argv){
 	if(!p.getNum("--cutClass",cutClass))cutClass=50;
 	if(!p.getNum("--hidnum",hidnum))hidnum=1;
 	if(!p.getString("--outF",outF))outF="./out.mdl";
-	if(!p.getString("--ans",ansF))ansF="";
 	p.print();
 	
 	Dataset d(featurePath.c_str(), classPath.c_str(), sntPath.c_str(), cutClass);
 	d.parseTestData(testPath.c_str());
-	cout << "cutClass is " << cutClass << endl;
-	cout <<"testset sentences numbers:"<< d.getTestSentNum() << endl;
+	//cout << "cutClass is " << cutClass << endl;
+	//cout <<"testset sentences numbers:"<< d.getTestSentNum() << endl;
+	if(p.getString("--load",loadF)){
+		cout<<"Loading RNN model..."<<endl;
+		RNN loadM;
+		loadM.load(loadF);
+		loadM.setLearningRate(rate);
+		loadM.setMomentum(momentum);
+		loadM.setReg(reg);
+		loadM.train(d,epoch,0.8,decay);
+		loadM.save(outF);
+	}
+	else{
+	cout<<"Training RNN model from scratch..."<<endl;
 	vector<size_t>dim;
 	dim.push_back(d.getFeatureDim());
 	for(size_t t=0;t<hidnum;++t) dim.push_back(hidden);
@@ -88,5 +100,6 @@ int main(int argc,char** argv){
 	RNN rnn(rate,momentum,reg,var,NORMAL,dim,ALL, step,d);
 	rnn.train(d,epoch,0.8,decay);
 	rnn.save(outF);
+	}
 	return 0;
 }
