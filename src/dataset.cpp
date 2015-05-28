@@ -22,12 +22,12 @@ Dataset::Dataset(const char* featurePath, const char* classPath, const char* snt
 	_sentCtr = 0;
 	_cutClass = cutClass;
 	_trainSentCtr = 0;
-	cout << "cutClass is " << _cutClass << endl;
+//	cout << "cutClass is " << _cutClass << endl;
 	_validSentCtr = 0;
-	cout << "inputting word2vec file:\n";	
+//	cout << "inputting word2vec file:\n";	
 	ifstream fin(featurePath);
 	if(!fin) cout<<"Can't open word2vec file!!!\n";
-	cout << "inputting class file:\n";
+//	cout << "inputting class file:\n";
 	ifstream classFin(classPath);
 	if (!classFin) cout << "Can't open classfile!!!\n";
 	
@@ -97,7 +97,7 @@ Dataset::Dataset(const char* featurePath, const char* classPath, const char* snt
 	fin.close();
 	classFin.close();
 	
-	cout << "inputting sentence file:\n";
+//	cout << "inputting sentence file:\n";
 	ifstream sntFin(sntPath);
 	if (!sntFin) cout << "Can't open sentence file!!!\n";
 	string tmpStr;
@@ -140,7 +140,7 @@ Dataset::Dataset(const char* featurePath, const char* classPath, const char* snt
 	}
 	cout <<"words not in w2v: "<< bla << endl;
 	cout <<"total words in map: "<< _wordMap.size() << endl;
-	cout << "read sentence done!!!\n";
+//	cout << "read sentence done!!!\n";
 	sntFin.close();
 	dataSegment( 0.95);
 
