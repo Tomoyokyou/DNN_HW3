@@ -26,6 +26,7 @@ OUT=./model/out.mdl
 CUTCLASS=50
 
 mkdir -p model
+mkdir -p log
 
 if [ -f ./bin/train.app ]; then
 echo "executables checked..."
@@ -35,4 +36,4 @@ make train
 fi
 ./bin/train.app  ${FEATUREFILE} ${SENTENCEFILE} ${CLASSFILE} ${TESTFILE} --ans ${ANSWERFILE} --rate ${RATE} \
 --momentum ${MOMENTUM} --epoch ${EPOCH} --decay ${DECAY} --var ${VAR} --step ${STEP} --reg ${REG} \
- --hidden ${HIDDEN} --outF ${OUT} --cutClass ${CUTCLASS} --hidnum ${HIDNUM}
+ --hidden ${HIDDEN} --outF ${OUT} --cutClass ${CUTCLASS} --hidnum ${HIDNUM} | tee log/hidden_${HIDDEN}_step_${STEP}_cut_${CUTCLASS}.log
