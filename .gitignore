@@ -39,3 +39,8 @@ model/*
 ./**/*.orig
 
 #./train.sh
+
+
+# Log files
+log/*
+

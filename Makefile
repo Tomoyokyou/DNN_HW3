@@ -33,9 +33,9 @@ DIR:
 	@mkdir -p obj
 	@mkdir -p bin
 
-#larry:$(HEADEROBJ) example/testLoadModel.cpp
-#	@echo "compiling testLoadModel.cpp"
-#	@$(CXX) $(CPPFLAGS) $(INCLUDE) -o bin/$@.app $^ $(LIBS) $(LIBRARY) $(LD_LIBRARY)
+larry:$(HEADEROBJ) example/testLoadModel.cpp
+	@echo "compiling testLoadModel.cpp"
+	@$(CXX) $(CPPFLAGS) $(INCLUDE) -o bin/$@.app $^ $(LIBS) $(LIBRARY) $(LD_LIBRARY)
 
 train:$(HEADEROBJ) example/rnnTrain.cpp
 	@echo "compiling train.app for DNN Training"
