@@ -244,8 +244,8 @@ void RNN::predict(Dataset& testData, const string& outName = "./model/testOutput
 	cout << "Questions:" << testNum/5 << endl;
 
 	vector<mat> fin;
-	vector<Sentence> testset;
-	testData.getAllTestSent(testset);
+	//vector<Sentence> testset;
+	//testData.getAllTestSent(testset);
 	size_t i = 0;
 	while( i < testNum ){
 		double tempMin = DBL_MAX;

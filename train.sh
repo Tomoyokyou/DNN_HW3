@@ -1,5 +1,5 @@
-FEATUREDIR=/home/ahpan/DNN_HW3/model/preprocess_3/
-#FEATUREDIR=/home/hui/project/rnnFeat/
+#FEATUREDIR=/home/ahpan/DNN_HW3/model/preprocess_3/
+FEATUREDIR=/home/hui/project/rnnFeat/
 FEATUREFILE=${FEATUREDIR}word_vector.txt
 SENTENCEFILE=${FEATUREDIR}training_oov.txt
 CLASSFILE=${FEATUREDIR}classes.sorted.txt
