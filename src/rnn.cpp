@@ -73,6 +73,20 @@ void RNN::status()const
 	cout<<"*************************************"<<endl;
 	cout<<"numbers of layers: "<<_transforms.size()<<endl;
 	cout<<"numbers of class: "<<_outSoftmax.size()<<endl;
+	cout<<"*************************************"<<endl;
+	cout<<"Structure:"<<endl;
+	for(size_t t=0;t<_transforms.size();++t){
+		ACT type=_transforms[t]->getAct();
+		if(t!=0)cout<<"->";
+		switch(type){
+			case SIGMOID: cout<<"Sigmoid("<<_transforms[t]->getOutputDim()<<")";break;
+			case RECURSIVE: cout<<"Recursive("<<_transforms[t]->getOutputDim()<<")";break;
+			case SOFTMAX: cout<<"Softmax("<<_transforms[t]->getOutputDim()<<")";break;
+			default: break;
+		}
+	}
+	cout<<endl;	
+	cout<<"*************************************"<<endl;
 	cout<<"parameters:\n";
 	cout<<" learning rate: "<<_learningRate<<endl;
 	cout<<" momentum: "<<_momentum<<endl;
@@ -90,7 +104,7 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 	float Eout = 1;
 	float pastEout = Eout;
 	float minEout = Eout;
-	float maxAcc = 0;
+	float maxAcc = 0,temp;
 	size_t oneEpoch = data.getTrainSentNum();
 	size_t epochCnt = 1;
 	size_t num = 0;
@@ -101,16 +115,33 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 	Sentence crtSent;
 	vector<Sentence> trainset;
 	vector<Sentence> validset;
+	vector<size_t>   validId;
 	vector<Sentence> testset;
 	data.getAllTrainSent(trainset);
 	data.getAllValidSent(validset);
+	validId.reserve(validset.size()); 
+	for(size_t i = 0; i < validset.size(); i++){
+		Sentence tempSent = validset.at(i);
+		size_t tempClass = tempSent.getWord(0)->getClassLabel();
+		size_t id = 0;
+		for (int k = 1; k < tempSent.getSize(); k++){
+			if(tempSent.getWord(k)->getClassLabel() <= tempClass){
+				tempClass = tempSent.getWord(k)->getClassLabel();
+				id = k;
+			}
+		}
+		validId.push_back(id);
+	}
 	data.getAllTestSent(testset);
 	vector<Word*>* wvptr=NULL;
+
+/*
 	vector<char> ans;
 	//string ansPath="/home/hui/project/rnnFeat/answer.txt";
 	string ansPath="/home/ahpan/Data/answer.txt";
 	readAns(ansPath,ans);
-	bool haveans=(ans.size()==1040);
+	//bool haveans=(ans.size()==1040);
+*/
 	cout<<"---------------------"<<endl;
 	cout<<"-   RNN training  -"<<endl;
 	cout<<"---------------------"<<endl;
@@ -118,9 +149,10 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 	cout<<"   training:  "<<trainset.size()<<endl;
 	cout<<"   validation:"<<validset.size()<<endl;
 	cout<<"   testing:   "<<testset.size()<<endl;
-	cout<<"   answer:    "<<((haveans)?"true":"false")<<endl;
+	cout<<"   maxepoch:  "<<maxEpoch<<endl;
+	//cout<<"   answer:    "<<((haveans)?"true":"false")<<endl;
 	cout<<"---------------------"<<endl;
-	for(; epochCnt; epochCnt++ ){   // increment by sentence
+	for(; epochCnt<maxEpoch+1; epochCnt++ ){   // increment by sentence
 		cout<<"EPOCH: "<<epochCnt<<" Highest Accuracy: "<<maxAcc<<endl;
 		for(vector<Sentence>::iterator it=trainset.begin();it!=trainset.end();++it){
 			wvptr=it->getWordVecPtr();
@@ -130,35 +162,9 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 		wordClassLabel.clear();
 		// push back first word
 		num++;
-		//cout<<"wsize: "<<wvptr->size()<<endl;
 
 		feedForward(*wvptr,forwardSet,wordClassLabel);
 
-		/*
-		Word * wptr,*wpptr;
-		for(size_t t=0;t<wvptr->size()-1;++t){
-			wptr=wvptr->at(t+1);wpptr=wvptr->at(t);
-			wordClassLabel.push_back(wptr->getClassLabel());
-			feedForward(wpptr->getMatPtr(),fin,wptr->getClassLabel());
-			ans[0]=wptr->getClassOutput(data);
-			ans[1]=wptr->getWordOutput(data);
-			forwardSet.push_back(pair<vector<mat>,vector<mat>>(fin,ans));
-		}
-		*/
-		//
-		/*
-		for (int wordCnt = 0; wordCnt < crtSent.getSize()-1; wordCnt++){
-			int nextLabel = crtSent.getWord(wordCnt+1)->getClassLabel();
-			int tmpLabel = crtSent.getWord(wordCnt)->getClassLabel();
-			wordClassLabel.push_back(nextLabel);
-			//feedForward(crtSent.getWord(wordCnt)->getMatFeature(), fin, nextLabel);
-			feedForward(crtSent.getWord(wordCnt)->getMatPtr(),fin,nextLabel);
-			// store all forward output 
-			ans[0]=crtSent.getWord(wordCnt+1)->getClassOutput(data);
-			ans[1]=crtSent.getWord(wordCnt+1)->getWordOutput(data);
-			forwardSet.push_back(pair<vector<mat>,vector<mat>>(fin,ans));
-		}
-		*/
 		backPropagate(forwardSet, wordClassLabel);
 		//reset
 		for (int i = 0; i < _transforms.size(); i++){
@@ -170,22 +176,59 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 		if (num % 20000 == 0){
 			cout<<"Iter: "<<num<<endl;
 			/*Validation*/
-			
-			data.resetValidSentCtr();
-			vector<mat> fin;
-			//size_t numValid = data.getValidSentNum();
-			size_t totalCount = 10000;
 
-			//cout << "Num of valid: " << numValid << endl;
+			vector<mat> fin;
+			size_t numValid = (validset.size() < 2000) ? validset.size() : 2000;
+			size_t totalCount = numValid;
+			cout << "Num of valid: " << totalCount << endl;
 
 			size_t numAcc = 0;
-			for(int j = 0; j < 10000; j++){
-				Sentence validSent = data.getValidSent();
-				if(validSent.getSize() == 0){
+			for(int j = 0; j < numValid; j++){
+				Sentence validSent = validset.at(j);
+				if(validSent.getSize() < 2){
 					totalCount--;
 					continue;
 				}
 					
+
+				size_t blank = validId.at(j);
+				//cout << "Position of blank: " << blank << endl;
+
+				if(blank < 2){
+					totalCount--;
+					continue;
+				}
+
+				fin.clear();
+				
+				for (int k = 0; k < blank-1; k++){
+					int nextClass = validSent.getWord(k+1)->getClassLabel();
+					feedForwardOut(validSent.getWord(k)->getMatPtr(),fin,nextClass);
+					if(k == blank-2 && blank >= 2){
+						MatrixXf* classtmp = fin[fin.size()-2].getData();
+						MatrixXf::Index maxRow, maxCol;
+						float max = classtmp->maxCoeff(&maxRow, &maxCol);
+						if(maxRow == nextClass)
+							numAcc++;
+					}
+				}
+			}
+
+			/*	
+			data.resetValidSentCtr();
+			vector<mat> fin;
+			//size_t numValid = data.getValidSentNum();
+			size_t totalCount = 2000;
+
+			//cout << "Num of valid: " << numValid << endl;
+
+			size_t numAcc = 0;
+			for(int j = 0; j < 2000; j++){
+				Sentence validSent = data.getValidSent();
+				if(validSent.getSize() < 2){
+					totalCount--;
+					continue;
+				}					
 
 				size_t blank = rand() % validSent.getSize();
 				//cout << "Position of blank: " << blank << endl;
@@ -209,23 +252,26 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 					}
 				}
 			}
-			cout << "Validate Acc: " << (float)numAcc/totalCount << endl;
+			*/
+			temp = (float)numAcc/totalCount;
+			cout << "Validate Acc: " << temp << endl;
 			
-			
+/*
 			vector<char> pred;
 			readPredict(data, pred);
-			float temp = 0;
+			float temp1 = 0;
 			for (int k = 0; k < pred.size(); k ++)
 				if (pred[k] == ans[k])
-					temp ++;
-			temp /= (float)1040;
-			cout << "acc is " << temp << endl;
+					temp1 ++;
+			//temp1 /= (float)1040;
+			cout << "acc is " << temp1/(float)1040 << endl;
+*/
 			if(maxAcc<temp){
 				maxAcc=temp;
-				if(maxAcc>0.4){
+				if(maxAcc>0.03){
 					string modelpath="./model/acc_";
 					stringstream s;
-					s<<modelpath<<(int)(maxAcc*1000/(int)10)<<".mdl";
+					s<<modelpath<<((int)(maxAcc*10000)/(int)10)<<".mdl";
 					save(s.str());
 					}
 			}
@@ -473,9 +519,10 @@ void RNN::feedForward(const vector<Word*>& words,vector<pair<vector<mat>,vector<
 		wp2=words[t+1];
 		classout.push_back(wp2->getClassLabel());
 		fout[0]=*(wp1->getMatPtr());
-		((Recursive*)_transforms[0])->forwardFirst(fout[1],wp1->getMatPtr());
-		for(size_t k=1;k<_transforms.size();++k)
-			(_transforms[k])->forward(fout[k+1],fout[k]);
+			_transforms[0]->forward(fout[1],fout[0]);
+		for(size_t k=1;k<_transforms.size();++k){
+			_transforms[k]->forward(fout[k+1],fout[k]);
+		}
 		_outSoftmax[classout[t]]->forward(fout[_transforms.size()+1],fout[_transforms.size()-1]);
 		//ans[0]=wp2->getClassOutput(data);
 		//ans[1]=wp2->getWordOutput(data);
@@ -484,18 +531,6 @@ void RNN::feedForward(const vector<Word*>& words,vector<pair<vector<mat>,vector<
 		out.push_back(pair<vector<mat>,vector<mat*>>(fout,ans));
 	}
 
-	/*
-	//mat tempInputMat = inputMat;
-	fout.resize(_transforms.size()+2);//
-	//fout[0]=inputMat;
-	fout[0]=*inputMat;
-	//_transforms.at(0)->forward(fout[1],fout[0]);
-	((Recursive*)_transforms.at(0))->forwardFirst(fout[1],inputMat);//
-	for(size_t i = 1; i < _transforms.size(); i++){
-		(_transforms.at(i))->forward(fout[i+1],fout[i] );
-	}
-	_outSoftmax[classLabel]->forward(fout[_transforms.size()+1], fout[_transforms.size()-1]);
-	*/
 }
 
 void RNN::feedForwardOut(mat* inputMat,vector<mat>& fout,int classLabel){
@@ -504,9 +539,9 @@ void RNN::feedForwardOut(mat* inputMat,vector<mat>& fout,int classLabel){
 	//fout[0]=inputMat;
 	fout[0]=*inputMat;
 	//_transforms.at(0)->forward(fout[1],fout[0]);
-	((Recursive*)_transforms.at(0))->forwardFirst(fout[1],inputMat);//
+	_transforms[0]->forward(fout[1],fout[0]);
 	for(size_t i = 1; i < _transforms.size(); i++){
-		(_transforms.at(i))->forward(fout[i+1],fout[i] );
+		_transforms.at(i)->forward(fout[i+1],fout[i]);
 	}
 	_outSoftmax[classLabel]->forward(fout[_transforms.size()+1], fout[_transforms.size()-1]);
 }
@@ -525,7 +560,10 @@ void RNN::backPropagate(const vector<pair<vector<mat>,vector<mat*>> >& fromForwa
 	ACT testType;
 	mat delta1,delta2,classdiff,holdOutput;
 	mat softSum(_transforms.back()->getOutputDim(),1,0);
+	mat dummy(1,1);
 	vector<mat>::const_iterator it;
+	vector<mat> error(tsize);
+	//vector<mat>::iterator ite=error.begin();
 	assert(fsize==classLabel.size());
 	for(size_t t=0;t<fsize;++t){
 		it = (fromForward[fsize-1-t].first).end();it--;
@@ -535,11 +573,20 @@ void RNN::backPropagate(const vector<pair<vector<mat>,vector<mat*>> >& fromForwa
 		//this should update after all been calculated
 		((Softmax*)_transforms.back())->accGra(*it,delta1,_learningRate,_reg,_momentum);
 		((Softmax*)_outSoftmax[classLabel[fsize-1-t]])->accGra(*it,delta2,_learningRate,_reg,_momentum);
-		classdiff=(*it) & ((float)1.0-(*it));
+		classdiff=(*it) & ((float)1.0-(*it));it--;
 		delta1=classdiff & (_transforms.back()->multWeightInv(delta1));
 		delta2=classdiff & (_outSoftmax[classLabel[fsize-1-t]]->multWeightInv(delta2));
+		error[0]=delta1+delta2;
 		//don't care for recursive;
-		_transforms[0]->backPropagate(mat(1,1),delta1+delta2,_learningRate,_reg,_momentum);
+		//calError(error.back(),*it,_transforms[tsize-2],_transforms[tsize-3],sumD);
+		//_transforms[tsize-2]->backPropagate(mat(1,1),error.back(),_learningRate,_reg,_momentum);
+		for(size_t t=0;t<_transforms.size()-1;t++){
+			_transforms[tsize-2-t]->backPropagate(dummy,error[t],_learningRate,_reg,_momentum);
+			if(tsize!=t+2)	calError(error[t+1],*it,_transforms[tsize-2-t],_transforms[tsize-3-t],error[t]);
+			else break;
+			it--;
+			//_transforms[tsize-2-t]->backPropagate(dummy,error[tsize-2-t],_learningRate,_reg,_momentum);
+		}
 	}
 }
 
@@ -570,11 +617,11 @@ float computeErrRate(const vector<size_t>& ans, const vector<size_t>& output){
 void calError(mat& errout,const mat& fin,Transforms* act,Transforms* nex,const mat& delta){
 	ACT type=nex->getAct();
 	mat sigdiff=fin & ((float)1.0-fin);
-	mat w(act->getWeight());
+	//mat w(act->getWeight());
 	switch(type){
 		case RECURSIVE:
 		case SIGMOID:
-			errout=sigdiff & ( ~w * delta);
+			errout=sigdiff & ( act->multWeightInv(delta));
 			break;
 		case SOFTMAX:
 		default:
@@ -582,10 +629,10 @@ void calError(mat& errout,const mat& fin,Transforms* act,Transforms* nex,const m
 	}
 }
 
-float RNN::calAcc(){
-	string prePath("./model/predict.csv");
+float RNN::calAcc(string prePath,string ansPath){
+	//string prePath("./model/predict.csv");
 	//string ansPath("/home/hui/project/rnnFeat/answer.txt");
-	string ansPath("/home/ahpan/Data/answer.txt");
+	//string ansPath("/home/ahpan/Data/answer.txt");
 	ifstream pre(prePath.c_str());
 	ifstream ans(ansPath.c_str());
 	if (!pre) cout <<"can't open pre file\n";

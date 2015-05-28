@@ -41,7 +41,7 @@ public:
 	size_t getNumLayers();
 	void save(const string& fn);
 	bool load(const string& fn);
-	float calAcc();
+	float calAcc(string prePath,string ansPath);
 private:
 	//void feedForward(const mat& inputMat, vector<mat>& fout, int classLabel);
 	//void feedForward(mat* inputMat, vector<mat>& fout, int classLabel);

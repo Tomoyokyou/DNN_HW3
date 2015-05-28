@@ -12,16 +12,17 @@ void myUsage(){
 	cerr<<"$rnnTrain [feature] [sentence] [class] [test] --[options]"<<endl;
 	cerr<<"---------------------------------------------------------"<<endl;
 	cerr<<"Options:"<<endl;
-	cerr<<"[--rate]:learning rate for RNN training"<<endl;
-	cerr<<"[--momentum]:momentum for RNN tranining"<<endl;
-	cerr<<"[--var]:variance initializing RNN weights"<<endl;
-	cerr<<"[--step]:Backpropagation steps number"<<endl;
-	cerr<<"[--epoch]:maximum epoch numbers"<<endl;
-	cerr<<"[--outF]:writen RNN model to specific directory"<<endl;
-	cerr<<"[--decay]:decay coefficient for learning rate in RNN training"<<endl;
-	cerr<<"[--reg]:regularization coefficient in calculation of gradient descent"<<endl;
-	cerr<<"[--hidden]:specify dimension for hidden layer"<<endl;
-	cerr<<"[--cutClass]:specify class number to drop"<<endl;
+	cerr<<"[--rate]: learning rate for RNN training"<<endl;
+	cerr<<"[--momentum]: momentum for RNN tranining"<<endl;
+	cerr<<"[--var]: variance initializing RNN weights"<<endl;
+	cerr<<"[--step]: Backpropagation steps number"<<endl;
+	cerr<<"[--epoch]: maximum epoch numbers"<<endl;
+	cerr<<"[--outF]: writen RNN model to specific directory"<<endl;
+	cerr<<"[--decay]: decay coefficient for learning rate in RNN training"<<endl;
+	cerr<<"[--reg]: regularization coefficient in calculation of gradient descent"<<endl;
+	cerr<<"[--hidden]: specify dimension for hidden layer"<<endl;
+	cerr<<"[--cutClass]: specify class number to drop"<<endl;
+	cerr<<"[--hidnum]: numbers of hidden layers"<<endl;
 }
 int main(int argc,char** argv){
 	//string featurePath = "/home/larry/Documents/MLDS/DNN_HW3/model/word_vector.txt";
@@ -44,6 +45,7 @@ int main(int argc,char** argv){
 	p.addOption("--var",true);
 	p.addOption("--step",true);
 	p.addOption("--reg",true);
+	p.addOption("--hidnum",true);
 	p.addOption("--cutClass", true);
 	p.addOption("--hidden",true);
 	p.addOption("--outF",false);
@@ -52,7 +54,7 @@ int main(int argc,char** argv){
 
 	float rate,momentum,decay,var,reg;
 	int cutClass;
-	size_t epoch,step,hidden;
+	size_t epoch,step,hidden,hidnum;
 	if(!p.read(argc,argv)){
 		myUsage();
 		return 1;
@@ -70,6 +72,7 @@ int main(int argc,char** argv){
 	if(!p.getNum("--momentum",momentum))momentum=0;
 	if(!p.getNum("--reg",reg))reg=0.0001;
 	if(!p.getNum("--cutClass",cutClass))cutClass=50;
+	if(!p.getNum("--hidnum",hidnum))hidnum=1;
 	if(!p.getString("--outF",outF))outF="./out.mdl";
 	if(!p.getString("--ans",ansF))ansF="";
 	p.print();
@@ -80,7 +83,7 @@ int main(int argc,char** argv){
 	cout <<"testset sentences numbers:"<< d.getTestSentNum() << endl;
 	vector<size_t>dim;
 	dim.push_back(d.getFeatureDim());
-	dim.push_back(hidden);
+	for(size_t t=0;t<hidnum;++t) dim.push_back(hidden);
 	dim.push_back(d.getClassNum());
 	RNN rnn(rate,momentum,reg,var,NORMAL,dim,ALL, step,d);
 	rnn.train(d,epoch,0.8,decay);
