@@ -135,13 +135,6 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 	data.getAllTestSent(testset);
 	vector<Word*>* wvptr=NULL;
 
-/*
-	vector<char> ans;
-	//string ansPath="/home/hui/project/rnnFeat/answer.txt";
-	string ansPath="/home/ahpan/Data/answer.txt";
-	readAns(ansPath,ans);
-	//bool haveans=(ans.size()==1040);
-*/
 	cout<<"---------------------"<<endl;
 	cout<<"-   RNN training  -"<<endl;
 	cout<<"---------------------"<<endl;
@@ -150,7 +143,6 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 	cout<<"   validation:"<<validset.size()<<endl;
 	cout<<"   testing:   "<<testset.size()<<endl;
 	cout<<"   maxepoch:  "<<maxEpoch<<endl;
-	//cout<<"   answer:    "<<((haveans)?"true":"false")<<endl;
 	cout<<"---------------------"<<endl;
 	for(; epochCnt<maxEpoch+1; epochCnt++ ){   // increment by sentence
 		cout<<"EPOCH: "<<epochCnt<<" Highest Accuracy: "<<maxAcc<<endl;
@@ -189,8 +181,6 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 					totalCount--;
 					continue;
 				}
-					
-
 				size_t blank = validId.at(j);
 				//cout << "Position of blank: " << blank << endl;
 
@@ -212,60 +202,17 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 							numAcc++;
 					}
 				}
-			}
-
-			/*	
-			data.resetValidSentCtr();
-			vector<mat> fin;
-			//size_t numValid = data.getValidSentNum();
-			size_t totalCount = 2000;
-
-			//cout << "Num of valid: " << numValid << endl;
-
-			size_t numAcc = 0;
-			for(int j = 0; j < 2000; j++){
-				Sentence validSent = data.getValidSent();
-				if(validSent.getSize() < 2){
-					totalCount--;
-					continue;
-				}					
-
-				size_t blank = rand() % validSent.getSize();
-				//cout << "Position of blank: " << blank << endl;
-
-				if(blank < 2){
-					totalCount--;
-					continue;
+				for (int i = 0; i < _transforms.size(); i++){
+					_transforms[i]->resetCounter(_learningRate);
 				}
-
-				fin.clear();
-				
-				for (int k = 0; k < blank-1; k++){
-					int nextClass = validSent.getWord(k+1)->getClassLabel();
-					feedForwardOut(validSent.getWord(k)->getMatPtr(),fin,nextClass);
-					if(k == blank-2 && blank >= 2){
-						MatrixXf* classtmp = fin[fin.size()-2].getData();
-						MatrixXf::Index maxRow, maxCol;
-						float max = classtmp->maxCoeff(&maxRow, &maxCol);
-						if(maxRow == nextClass)
-							numAcc++;
-					}
+				for(int i=0;i<wordClassLabel.size();++i){
+					if(!_outSoftmax[wordClassLabel[i]]->isreset()) _outSoftmax[wordClassLabel[i]]->resetCounter(_learningRate);
 				}
 			}
-			*/
+
 			temp = (float)numAcc/totalCount;
 			cout << "Validate Acc: " << temp << endl;
 			
-/*
-			vector<char> pred;
-			readPredict(data, pred);
-			float temp1 = 0;
-			for (int k = 0; k < pred.size(); k ++)
-				if (pred[k] == ans[k])
-					temp1 ++;
-			//temp1 /= (float)1040;
-			cout << "acc is " << temp1/(float)1040 << endl;
-*/
 			if(maxAcc<temp){
 				maxAcc=temp;
 				if(maxAcc>0.03){
@@ -275,7 +222,7 @@ void RNN::train(Dataset& data, size_t maxEpoch = MAX_EPOCH, float trainRatio = 0
 					save(s.str());
 					}
 			}
-			_learningRate=(_learningRate<1e-6)?1e-6:_learningRate*alpha;
+			_learningRate=(_learningRate<1e-4)?1e-4:_learningRate*alpha;
 			cout<<"current time: "<<(float)(clock()-t)/(float)CLOCKS_PER_SEC<<endl;
 		}
 		} // iterator
@@ -630,9 +577,6 @@ void calError(mat& errout,const mat& fin,Transforms* act,Transforms* nex,const m
 }
 
 float RNN::calAcc(string prePath,string ansPath){
-	//string prePath("./model/predict.csv");
-	//string ansPath("/home/hui/project/rnnFeat/answer.txt");
-	//string ansPath("/home/ahpan/Data/answer.txt");
 	ifstream pre(prePath.c_str());
 	ifstream ans(ansPath.c_str());
 	if (!pre) cout <<"can't open pre file\n";
