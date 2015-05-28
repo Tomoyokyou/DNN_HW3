@@ -1,5 +1,5 @@
-#FEATUREDIR=/home/ahpan/DNN_HW3/model/preprocess_3/
-FEATUREDIR=/home/hui/project/rnnFeat/
+FEATUREDIR=/home/ahpan/DNN_HW3/model/preprocess_3/
+#FEATUREDIR=/home/hui/project/rnnFeat/
 FEATUREFILE=${FEATUREDIR}word_vector.txt
 SENTENCEFILE=${FEATUREDIR}training_oov.txt
 CLASSFILE=${FEATUREDIR}classes.sorted.txt
@@ -11,15 +11,15 @@ TESTFILE=${FEATUREDIR}testing_data_parse2.txt
 #TESTFILE=${FEATUREDIR}testing_data_parse2.txt
 RATE=0.01
 MOMENTUM=0.8
-EPOCH=100
+EPOCH=1
 DECAY=0.99
 VAR=0.2
-STEP=4
+STEP=3
 HIDDEN=50
-HIDNUM=2
+HIDNUM=1
 REG=0
-OUT=./model/dRNN4.mdl
-CUTCLASS=50
+OUT=./model/out3.mdl
+CUTCLASS=55
 LOAD=NO #if LOAD=YES, please specify MODELFILE
 MODELFILE=./model/load.mdl
 
