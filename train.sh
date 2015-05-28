@@ -24,6 +24,7 @@ LOAD=NO #if LOAD=YES, please specify MODELFILE
 MODELFILE=./model/load.mdl
 
 mkdir -p model
+mkdir -p log
 
 if [ -f ./bin/train.app ]; then
 echo "executables checked..."
