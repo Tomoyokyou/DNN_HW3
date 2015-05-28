@@ -39,3 +39,4 @@ model/*
 ./**/*.orig
 
 #./train.sh
+*.log
