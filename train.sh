@@ -1,5 +1,5 @@
-#FEATUREDIR=/home/ahpan/DNN_HW3/model/preprocess_3/
-FEATUREDIR=/home/hui/project/rnnFeat/
+FEATUREDIR=/home/ahpan/DNN_HW3/model/preprocess_3/
+#FEATUREDIR=/home/hui/project/rnnFeat/
 FEATUREFILE=${FEATUREDIR}word_vector.txt
 SENTENCEFILE=${FEATUREDIR}training_oov.txt
 CLASSFILE=${FEATUREDIR}classes.sorted.txt
@@ -18,7 +18,7 @@ STEP=3
 HIDDEN=50
 HIDNUM=1
 REG=0
-OUT=./model/out3.mdl
+OUT=./model/out.mdl
 CUTCLASS=55
 LOAD=NO #if LOAD=YES, please specify MODELFILE
 MODELFILE=./model/load.mdl
